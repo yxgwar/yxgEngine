@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.10)
+project(MyOpengl)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+include_directories("./vendor/glfw/include")
+include_directories("./vendor/glad/include")
+
+add_executable(MyOpengl ./src/main.cpp ./vendor/glad/src/glad.c)
+target_link_libraries(MyOpengl "${CMAKE_SOURCE_DIR}/vendor/glfw/lib-mingw-w64/libglfw3.a")
+target_link_libraries(MyOpengl "opengl32.lib")
