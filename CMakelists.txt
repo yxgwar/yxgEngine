@@ -12,7 +12,10 @@ include_directories(
 
 set( src
     ${PROJECT_SOURCE_DIR}/src/main.cpp
-    ${PROJECT_SOURCE_DIR}/src/Shader.cpp
+    ${PROJECT_SOURCE_DIR}/src/shader.cpp
+    ${PROJECT_SOURCE_DIR}/src/texture.cpp
+    ${PROJECT_SOURCE_DIR}/src/vertexbuffer.cpp
+    ${PROJECT_SOURCE_DIR}/src/indexbuffer.cpp
     ${PROJECT_SOURCE_DIR}/src/stb_image_imp.cpp
 )
 
