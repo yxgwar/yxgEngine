@@ -1,11 +1,16 @@
 #include <iostream>
 #include <cmath>
+
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "shader.h"
 #include "texture.h"
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -94,7 +99,12 @@ int main()
         texture1.bind(0);
         texture2.bind(1);
 
+        glm::mat4 transform = glm::mat4(1.0f);
+        transform *= glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -0.5f, 0.0f));
+        transform *= glm::mat4_cast(glm::angleAxis((float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f)));
+
         ourShader.use();
+        ourShader.setMat4("transform", transform);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
