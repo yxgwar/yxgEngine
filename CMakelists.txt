@@ -11,14 +11,7 @@ include_directories(
     "src"
 )
 
-set( src
-    ${PROJECT_SOURCE_DIR}/src/main.cpp
-    ${PROJECT_SOURCE_DIR}/src/shader.cpp
-    ${PROJECT_SOURCE_DIR}/src/texture.cpp
-    ${PROJECT_SOURCE_DIR}/src/vertexbuffer.cpp
-    ${PROJECT_SOURCE_DIR}/src/indexbuffer.cpp
-    ${PROJECT_SOURCE_DIR}/src/stb_image_imp.cpp
-)
+file(GLOB src ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
 add_executable(MyOpengl ${src} ./vendor/glad/src/glad.c)
 target_link_libraries(MyOpengl "${CMAKE_SOURCE_DIR}/vendor/glfw/lib-mingw-w64/libglfw3.a")

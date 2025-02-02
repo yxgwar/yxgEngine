@@ -7,24 +7,78 @@
 #include "texture.h"
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
+#include "camera.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
+int width = 800;
+int height = 600;
+
+glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
+
+Camera camera(cameraPos, cameraFront, cameraUp);
+
+float deltaTime = 0.0f;
+float lastTime = 0.0f;
+
+float lastX = width / 2.0f;
+float lastY = height / 2.0f;
+bool firstMouse = true;
+
+float fov = 45.0f;
+
 void processInput(GLFWwindow *window)
 {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.KeyboardControl(CameraKeyCode::FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.KeyboardControl(CameraKeyCode::BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.KeyboardControl(CameraKeyCode::LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.KeyboardControl(CameraKeyCode::RIGHT, deltaTime);
 }
 
-int width = 800;
-int height = 600;
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+    float xpos = static_cast<float>(xposIn);
+    float ypos = static_cast<float>(yposIn);
+
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+
+    camera.MouseControl(xoffset, yoffset);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    if(fov >= 1.0f && fov <= 45.0f)
+        fov -= yoffset;
+    if(fov <= 1.0f)
+        fov = 1.0f;
+    if(fov >= 45.0f)
+        fov = 45.0f;
+}
 
 int main()
 {
@@ -54,6 +108,10 @@ int main()
     glViewport(0, 0, 800, 600);
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     float vertices[] = {
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -145,6 +203,13 @@ int main()
 
     while(!glfwWindowShouldClose(window))
     {
+        float currentTime = glfwGetTime();
+        deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
+        std::string title = "FPS:" + std::to_string(1.0f / deltaTime);
+        glfwSetWindowTitle(window, title.c_str());
+
         processInput(window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -153,15 +218,12 @@ int main()
         texture1.bind(0);
         texture2.bind(1);
 
-        // glm::mat4 model = glm::mat4_cast(glm::angleAxis((float)glfwGetTime(), glm::normalize(glm::vec3(0.5f, 1.0f, 0.0f))));
-        glm::mat4 view = glm::mat4(1.0f); 
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         glm::mat4 projection;
-        projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(fov), (float)width / height, 0.1f, 100.0f);
 
         ourShader.use();
         // ourShader.setMat4("model", model);
-        ourShader.setMat4("view", view);
+        ourShader.setMat4("view", camera.getView());
         ourShader.setMat4("projection", projection);
 
         glBindVertexArray(VAO);
@@ -184,7 +246,6 @@ int main()
     }
 
     glDeleteVertexArrays(1, &VAO);
-
     glfwTerminate();
     return 0;
 }
