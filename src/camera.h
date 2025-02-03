@@ -22,10 +22,13 @@ public:
 
     inline glm::mat4 getView() {return view;}
     inline glm::mat4 getProjection() {return projection;}
+    inline glm::vec3 getPosition() {return pos;}
 
     void KeyboardControl(CameraKeyCode code, float deltaTime);
     void MouseControl(float xPos, float yPos);
     void ScrollControl(float yOffset);
+
+    void FreeCamera();
 private:
     void calView();
     void calProjection();

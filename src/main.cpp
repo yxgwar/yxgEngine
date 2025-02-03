@@ -14,25 +14,61 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-}
+int ScreenWidth = 800;
+int ScreenHeight = 600;
 
-int width = 800;
-int height = 600;
-
-Camera camera((float)width, (float)height);
+Camera camera((float)ScreenWidth, (float)ScreenHeight);
 
 float deltaTime = 0.0f;
 float lastTime = 0.0f;
 
+bool isFocus = true;
+bool isPressed = false;
+
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    float targetAspect = (float)ScreenWidth / ScreenHeight;
+    float windowAspect = (float)width / height;
+
+    int viewportWidth, viewportHeight, offsetX, offsetY;
+    if(windowAspect > targetAspect)
+    {
+        viewportHeight = height;
+        viewportWidth = (int)(height * targetAspect);
+        offsetX = (width - viewportWidth) / 2;
+        offsetY = 0;
+    }
+    else
+    {
+        viewportWidth = width;
+        viewportHeight = (int)(width / targetAspect);
+        offsetX = 0;
+        offsetY = (height - viewportHeight) / 2;
+    }
+    glViewport(offsetX, offsetY, viewportWidth, viewportHeight);
+}
 
 void processInput(GLFWwindow *window)
 {
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS && !isPressed)
+    {
+        if(isFocus)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            isFocus = false;
+            camera.FreeCamera();
+        }
+        else
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            isFocus = true;
+        }
+        isPressed = true;
+    }
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE)
+        isPressed = false;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.KeyboardControl(CameraKeyCode::FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -49,14 +85,18 @@ void processInput(GLFWwindow *window)
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
-    camera.MouseControl(xpos, ypos);
+    if(isFocus)
+    {
+        float xpos = static_cast<float>(xposIn);
+        float ypos = static_cast<float>(yposIn);
+        camera.MouseControl(xpos, ypos);
+    }
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    camera.ScrollControl(yoffset);
+    if(isFocus)
+        camera.ScrollControl(yoffset);
 }
 
 int main()
@@ -67,7 +107,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(width, height, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(ScreenWidth, ScreenHeight, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -93,47 +133,47 @@ int main()
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     float vertices[] = {
-        -0.5f, -0.5f, -0.5f, 
-         0.5f, -0.5f, -0.5f,  
-         0.5f,  0.5f, -0.5f,  
-         0.5f,  0.5f, -0.5f,  
-        -0.5f,  0.5f, -0.5f, 
-        -0.5f, -0.5f, -0.5f, 
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+        0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
 
-        -0.5f, -0.5f,  0.5f, 
-         0.5f, -0.5f,  0.5f,  
-         0.5f,  0.5f,  0.5f,  
-         0.5f,  0.5f,  0.5f,  
-        -0.5f,  0.5f,  0.5f, 
-        -0.5f, -0.5f,  0.5f, 
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
 
-        -0.5f,  0.5f,  0.5f, 
-        -0.5f,  0.5f, -0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-        -0.5f, -0.5f, -0.5f, 
-        -0.5f, -0.5f,  0.5f, 
-        -0.5f,  0.5f,  0.5f, 
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-         0.5f,  0.5f,  0.5f,  
-         0.5f,  0.5f, -0.5f,  
-         0.5f, -0.5f, -0.5f,  
-         0.5f, -0.5f, -0.5f,  
-         0.5f, -0.5f,  0.5f,  
-         0.5f,  0.5f,  0.5f,  
+        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-        -0.5f, -0.5f, -0.5f, 
-         0.5f, -0.5f, -0.5f,  
-         0.5f, -0.5f,  0.5f,  
-         0.5f, -0.5f,  0.5f,  
-        -0.5f, -0.5f,  0.5f, 
-        -0.5f, -0.5f, -0.5f, 
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-        -0.5f,  0.5f, -0.5f, 
-         0.5f,  0.5f, -0.5f,  
-         0.5f,  0.5f,  0.5f,  
-         0.5f,  0.5f,  0.5f,  
-        -0.5f,  0.5f,  0.5f, 
-        -0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
     };
 
     VertexBuffer vb(vertices, sizeof(vertices));
@@ -141,13 +181,14 @@ int main()
 
     VertexArray va;
     std::vector<VertexAttribute> attributes = {
-        {0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0}
+        {0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0},
+        {1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float))}
     };
     va.AddVBO(vb, attributes);
 
     VertexArray lightVAO;
     attributes = {
-        {0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0}
+        {0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0}
     };
     lightVAO.AddVBO(vb, attributes);
 
@@ -180,12 +221,16 @@ int main()
         boxShader.use();
         boxShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
         boxShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
+        boxShader.setVec3("lightPos", lightPos);
+        boxShader.setVec3("viewPos", camera.getPosition());
 
         boxShader.setMat4("projection", camera.getProjection());
         boxShader.setMat4("view", camera.getView());
 
         glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 NormalM = glm::transpose(glm::inverse(model));
         boxShader.setMat4("model", model);
+        boxShader.setMat4("NormalM", NormalM);
 
         va.Draw();
 
