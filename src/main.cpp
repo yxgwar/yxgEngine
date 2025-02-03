@@ -22,20 +22,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 int width = 800;
 int height = 600;
 
-glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
-
-Camera camera(cameraPos, cameraFront, cameraUp);
+Camera camera((float)width, (float)height);
 
 float deltaTime = 0.0f;
 float lastTime = 0.0f;
-
-float lastX = width / 2.0f;
-float lastY = height / 2.0f;
-bool firstMouse = true;
-
-float fov = 45.0f;
 
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
@@ -61,30 +51,12 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
-
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-    lastX = xpos;
-    lastY = ypos;
-
-    camera.MouseControl(xoffset, yoffset);
+    camera.MouseControl(xpos, ypos);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    if(fov >= 1.0f && fov <= 45.0f)
-        fov -= yoffset;
-    if(fov <= 1.0f)
-        fov = 1.0f;
-    if(fov >= 45.0f)
-        fov = 45.0f;
+    camera.ScrollControl(yoffset);
 }
 
 int main()
@@ -209,8 +181,7 @@ int main()
         boxShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
         boxShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
 
-        glm::mat4 projection = glm::perspective(glm::radians(fov), (float)width / height, 0.1f, 100.0f);
-        boxShader.setMat4("projection", projection);
+        boxShader.setMat4("projection", camera.getProjection());
         boxShader.setMat4("view", camera.getView());
 
         glm::mat4 model = glm::mat4(1.0f);
@@ -219,7 +190,7 @@ int main()
         va.Draw();
 
         lightShader.use();
-        lightShader.setMat4("projection", projection);
+        lightShader.setMat4("projection", camera.getProjection());
         lightShader.setMat4("view", camera.getView());
         model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos);

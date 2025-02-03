@@ -17,15 +17,18 @@ enum class CameraKeyCode
 class Camera
 {
 public:
-    Camera(float movementSpeed = 2.5f, float mouseSpeed = 0.1f);
-    Camera(glm::vec3 pos, glm::vec3 front, glm::vec3 up, float movementSpeed = 2.5f, float mouseSpeed = 0.1f);
+    Camera(float width, float height, float movementSpeed = 2.5f, float mouseSpeed = 0.1f, float fov = 45.0f);
+    Camera(float width, float height, glm::vec3 pos, glm::vec3 front, glm::vec3 up, float movementSpeed = 2.5f, float mouseSpeed = 0.1f, float fov = 45.0f);
 
     inline glm::mat4 getView() {return view;}
+    inline glm::mat4 getProjection() {return projection;}
 
     void KeyboardControl(CameraKeyCode code, float deltaTime);
-    void MouseControl(float xOffset, float yOffset);
+    void MouseControl(float xPos, float yPos);
+    void ScrollControl(float yOffset);
 private:
     void calView();
+    void calProjection();
 private:
     glm::vec3 pos;
     glm::vec3 front;
@@ -37,6 +40,15 @@ private:
     float movementSpeed;
     float mouseSpeed;
 
-    float yaw;
-    float pitch;
+    float m_yaw;
+    float m_pitch;
+
+    float m_fov;
+    float m_width;
+    float m_height;
+    float m_aspect;
+
+    float lastX;
+    float lastY;
+    bool firstMouse;
 };
