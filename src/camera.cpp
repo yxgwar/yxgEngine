@@ -37,6 +37,16 @@ void Camera::KeyboardControl(CameraKeyCode code, float deltaTime)
             pos += glm::normalize(glm::cross(front, up)) * cameraSpeed;
             break;
         }
+        case CameraKeyCode::UP:
+        {
+            pos += up * cameraSpeed;
+            break;
+        }
+        case CameraKeyCode::DOWN:
+        {
+            pos -= up * cameraSpeed;
+            break;
+        }
     }
     calView();
 }

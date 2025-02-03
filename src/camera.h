@@ -9,7 +9,9 @@ enum class CameraKeyCode
     FORWARD,
     BACKWARD,
     LEFT,
-    RIGHT
+    RIGHT,
+    UP,
+    DOWN
 };
 
 class Camera
