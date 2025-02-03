@@ -1,0 +1,69 @@
+#include "vertexarray.h"
+
+VertexArray::VertexArray()
+    :m_count(0), m_type(0), m_vertexCount(0)
+{
+    glGenVertexArrays(1, &ID);
+    glBindVertexArray(ID);
+}
+
+VertexArray::~VertexArray()
+{
+    glDeleteVertexArrays(1, &ID);
+}
+
+void VertexArray::AddVBO(VertexBuffer &vb, std::vector<VertexAttribute> &attribute)
+{
+    bind();
+    vb.bind();
+
+    for(auto& attr: attribute)
+    {
+        glEnableVertexAttribArray(attr.index);
+        glVertexAttribPointer(
+            attr.index,
+            attr.size,
+            attr.type,
+            attr.normalized,
+            attr.stride,
+            attr.pointer
+        );
+    }
+
+    m_vertexCount += vb.getVertexCount();
+
+    vb.unbind();
+    unbind();
+}
+
+void VertexArray::SetEBO(IndexBuffer &ib, GLsizei count, GLenum type)
+{
+    bind();
+    ib.bind();
+
+    m_count = count;
+    m_type = type;
+
+    unbind();
+    ib.unbind();
+}
+
+void VertexArray::Draw()
+{
+    bind();
+    if(m_count > 0)
+        glDrawElements(GL_TRIANGLES, m_count, m_type, 0);
+    else
+        glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
+    unbind();
+}
+
+void VertexArray::bind()
+{
+    glBindVertexArray(ID);
+}
+
+void VertexArray::unbind()
+{
+    glBindVertexArray(0);
+}

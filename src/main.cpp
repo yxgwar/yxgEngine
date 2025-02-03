@@ -7,6 +7,7 @@
 #include "texture.h"
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
+#include "vertexarray.h"
 #include "camera.h"
 
 #include "glm/glm.hpp"
@@ -178,17 +179,14 @@ int main()
     VertexBuffer vb(vertices, sizeof(vertices));
     // IndexBuffer ib(indices, sizeof(indices));
 
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
+    VertexArray va;
 
-    glBindVertexArray(VAO);
-    vb.bind();
-    // ib.bind();
+    std::vector<VertexAttribute> attributes = {
+        {0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0},
+        {1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))}
+    };
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    va.AddVBO(vb, attributes);
     // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     // glEnableVertexAttribArray(2);
 
@@ -226,7 +224,6 @@ int main()
         ourShader.setMat4("view", camera.getView());
         ourShader.setMat4("projection", projection);
 
-        glBindVertexArray(VAO);
         for (unsigned int i = 0; i < 10; i++)
         {
             // calculate the model matrix for each object and pass it to shader before drawing
@@ -236,7 +233,7 @@ int main()
             model *= glm::mat4_cast(glm::angleAxis(glm::radians(angle), glm::normalize(glm::vec3(1.0f, 0.3f, 0.5f))));
             ourShader.setMat4("model", model);
 
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            va.Draw();
         }
         // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -245,7 +242,6 @@ int main()
         glfwSwapBuffers(window);
     }
 
-    glDeleteVertexArrays(1, &VAO);
     glfwTerminate();
     return 0;
 }
