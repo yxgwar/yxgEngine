@@ -195,6 +195,20 @@ int main()
     Shader boxShader("../assets/shaders/box.vs", "../assets/shaders/box.fs");
     Shader lightShader("../assets/shaders/light.vs", "../assets/shaders/light.fs");
 
+    glfwSetWindowUserPointer(window, &boxShader);
+
+    // 设置键盘回调
+    glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+        if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+            Shader* shader = static_cast<Shader*>(glfwGetWindowUserPointer(window));
+            if (shader->reload()) {
+                std::cout << "Shader hot reload success" << std::endl;
+            } else {
+                std::cerr << "Shader hot reload fail" << std::endl;
+            }
+        }
+    });
+
     // Texture texture1("../assets/images/container.jpg");
     // Texture texture2("../assets/images/awesomeface.png");
 

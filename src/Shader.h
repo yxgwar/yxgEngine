@@ -25,6 +25,11 @@ public:
     void setVec3(const std::string &name, const glm::vec3 &value) const;
     void setVec3(const std::string &name, float x, float y, float z) const;
     void setMat4(const std::string &name, glm::mat4 mat) const;
+    
+    bool reload();
+private:
+    bool loadFromFile(const char* vertexPath, const char* fragmentPath);
 private:
     unsigned int ID;
+    std::string m_vertexPath, m_fragmentPath;
 };
