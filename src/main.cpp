@@ -233,9 +233,15 @@ int main()
         // texture1.bind(0);
         // texture2.bind(1);
         boxShader.use();
-        boxShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-        boxShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
-        boxShader.setVec3("lightPos", lightPos);
+        boxShader.setVec3("material.ambient", 0.25f, 0.20725f, 0.20725f);
+        boxShader.setVec3("material.diffuse", 1.0f, 0.829f, 0.829f);
+        boxShader.setVec3("material.specular", 0.296648f, 0.296648f, 0.296648f);
+        boxShader.setFloat("material.shininess", 0.088f * 128);
+        
+        boxShader.setVec3("light.ambient",  1.0f, 1.0f, 1.0f);
+        boxShader.setVec3("light.diffuse",  1.0f, 1.0f, 1.0f);
+        boxShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f); 
+        boxShader.setVec3("light.position", lightPos);
         boxShader.setVec3("viewPos", camera.getPosition());
 
         boxShader.setMat4("projection", camera.getProjection());
