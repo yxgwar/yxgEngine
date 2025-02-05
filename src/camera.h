@@ -20,9 +20,10 @@ public:
     Camera(float width, float height, float movementSpeed = 2.5f, float mouseSpeed = 0.1f, float fov = 45.0f);
     Camera(float width, float height, glm::vec3 pos, glm::vec3 front, glm::vec3 up, float movementSpeed = 2.5f, float mouseSpeed = 0.1f, float fov = 45.0f);
 
-    inline glm::mat4 getView() {return view;}
-    inline glm::mat4 getProjection() {return projection;}
-    inline glm::vec3 getPosition() {return pos;}
+    inline glm::mat4 getView() const {return view;}
+    inline glm::mat4 getProjection() const {return projection;}
+    inline glm::vec3 getPosition() const {return pos;}
+    inline glm::vec3 getFront() const {return front;}
 
     void KeyboardControl(CameraKeyCode code, float deltaTime);
     void MouseControl(float xPos, float yPos);

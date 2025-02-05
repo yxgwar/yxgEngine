@@ -14,8 +14,8 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-int ScreenWidth = 800;
-int ScreenHeight = 600;
+int ScreenWidth = 1920;
+int ScreenHeight = 1080;
 
 Camera camera((float)ScreenWidth, (float)ScreenHeight);
 
@@ -124,7 +124,7 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
 
-    glViewport(0, 0, 800, 600);
+    glViewport(0, 0, ScreenWidth, ScreenHeight);
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
@@ -176,16 +176,36 @@ int main()
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
     };
 
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f,  0.0f,  0.0f),
+        glm::vec3( 2.0f,  5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3( 2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f,  3.0f, -7.5f),
+        glm::vec3( 1.3f, -2.0f, -2.5f),
+        glm::vec3( 1.5f,  2.0f, -2.5f),
+        glm::vec3( 1.5f,  0.2f, -1.5f),
+        glm::vec3(-1.3f,  1.0f, -1.5f)
+    };
+
+    glm::vec3 pointLightPositions[] = {
+        glm::vec3( 0.7f,  0.2f,  2.0f),
+        glm::vec3( 2.3f, -3.3f, -4.0f),
+        glm::vec3(-4.0f,  2.0f, -12.0f),
+        glm::vec3( 0.0f,  0.0f, -3.0f)
+    };
+
     VertexBuffer vb(vertices, sizeof(vertices));
     // IndexBuffer ib(indices, sizeof(indices));
 
-    VertexArray va;
+    VertexArray boxVAO;
     std::vector<VertexAttribute> attributes = {
         {0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0},
         {1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float))},
         {2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float))}
     };
-    va.AddVBO(vb, attributes);
+    boxVAO.AddVBO(vb, attributes);
 
     VertexArray lightVAO;
     attributes = {
@@ -211,11 +231,8 @@ int main()
     });
     Texture diffuse("../assets/images/container2.png");
     Texture specular("../assets/images/container2_specular.png");
-    Texture emission("../assets/images/matrix.jpg");
-    boxShader.use();
-    boxShader.setInt("material.diffuse", 0);
-    boxShader.setInt("material.specular", 1);
-    boxShader.setInt("material.emission", 2);
+    Texture sky("../assets/images/sky.jpg");
+    // Texture emission("../assets/images/matrix.jpg");
 
     while(!glfwWindowShouldClose(window))
     {
@@ -225,6 +242,7 @@ int main()
 
         std::string title = "FPS:" + std::to_string(1.0f / deltaTime);
         glfwSetWindowTitle(window, title.c_str());
+        glfwGetWindowSize(window, &ScreenWidth, &ScreenHeight);
 
         processInput(window);
 
@@ -233,37 +251,95 @@ int main()
 
         diffuse.bind(0);
         specular.bind(1);
-        emission.bind(2);
+        sky.bind(2);
+        // emission.bind(2);
 
         boxShader.use();
-        boxShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-        boxShader.setFloat("material.shininess", 64.0f);
+        boxShader.setInt("material.diffuse", 0);
+        boxShader.setInt("material.specular", 1);
+        boxShader.setInt("lightTex", 2);
+        boxShader.setFloat("material.shininess", 32.0f);
         
-        boxShader.setVec3("light.ambient",  0.2f, 0.2f, 0.2f);
-        boxShader.setVec3("light.diffuse",  0.5f, 0.5f, 0.5f);
-        boxShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f); 
-        boxShader.setVec3("light.position", lightPos);
+        boxShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+        boxShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+        boxShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+        boxShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+                // point light 1
+        boxShader.setVec3("pointLights[0].position", pointLightPositions[0]);
+        boxShader.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+        boxShader.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+        boxShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+        boxShader.setFloat("pointLights[0].constant", 1.0f);
+        boxShader.setFloat("pointLights[0].linear", 0.09f);
+        boxShader.setFloat("pointLights[0].quadratic", 0.032f);
+        // point light 2
+        boxShader.setVec3("pointLights[1].position", pointLightPositions[1]);
+        boxShader.setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+        boxShader.setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
+        boxShader.setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
+        boxShader.setFloat("pointLights[1].constant", 1.0f);
+        boxShader.setFloat("pointLights[1].linear", 0.09f);
+        boxShader.setFloat("pointLights[1].quadratic", 0.032f);
+        // point light 3
+        boxShader.setVec3("pointLights[2].position", pointLightPositions[2]);
+        boxShader.setVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
+        boxShader.setVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
+        boxShader.setVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
+        boxShader.setFloat("pointLights[2].constant", 1.0f);
+        boxShader.setFloat("pointLights[2].linear", 0.09f);
+        boxShader.setFloat("pointLights[2].quadratic", 0.032f);
+        // point light 4
+        boxShader.setVec3("pointLights[3].position", pointLightPositions[3]);
+        boxShader.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
+        boxShader.setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
+        boxShader.setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
+        boxShader.setFloat("pointLights[3].constant", 1.0f);
+        boxShader.setFloat("pointLights[3].linear", 0.09f);
+        boxShader.setFloat("pointLights[3].quadratic", 0.032f);
+        // spotLight
+        boxShader.setVec3("spotLight.position", camera.getPosition());
+        boxShader.setVec3("spotLight.direction", camera.getFront());
+        boxShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+        boxShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+        boxShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+        boxShader.setFloat("spotLight.constant", 1.0f);
+        boxShader.setFloat("spotLight.linear", 0.09f);
+        boxShader.setFloat("spotLight.quadratic", 0.032f);
+        boxShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+        boxShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+
         boxShader.setVec3("viewPos", camera.getPosition());
 
         boxShader.setMat4("projection", camera.getProjection());
         boxShader.setMat4("view", camera.getView());
+        if(ScreenWidth >= ScreenHeight)
+            boxShader.setVec2f("resolution", ScreenWidth, ScreenHeight);
+        else
+            boxShader.setVec2f("resolution", ScreenHeight, ScreenWidth);
 
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 NormalM = glm::transpose(glm::inverse(model));
-        boxShader.setMat4("model", model);
-        boxShader.setMat4("NormalM", NormalM);
-
-        va.Draw();
+        for(unsigned int i = 0; i < 10; i++)
+        {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            float angle = 20.0f * i;
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            glm::mat4 NormalM = glm::transpose(glm::inverse(model));
+            boxShader.setMat4("model", model);
+            boxShader.setMat4("NormalM", NormalM);
+            boxVAO.Draw();
+        }
 
         lightShader.use();
         lightShader.setMat4("projection", camera.getProjection());
         lightShader.setMat4("view", camera.getView());
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos);
-        model = glm::scale(model, glm::vec3(0.2f));
-        lightShader.setMat4("model", model);
-
-        lightVAO.Draw();
+        for (unsigned int i = 0; i < 4; i++)
+        {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, pointLightPositions[i]);
+            model = glm::scale(model, glm::vec3(0.2f));
+            lightShader.setMat4("model", model);
+            lightVAO.Draw();
+        }
 
         glfwPollEvents();
         glfwSwapBuffers(window);
