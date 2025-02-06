@@ -20,14 +20,23 @@ void VertexArray::AddVBO(VertexBuffer &vb, std::vector<VertexAttribute> &attribu
     for(auto& attr: attribute)
     {
         glEnableVertexAttribArray(attr.index);
-        glVertexAttribPointer(
-            attr.index,
-            attr.size,
-            attr.type,
-            attr.normalized,
-            attr.stride,
-            attr.pointer
-        );
+        if(attr.type == GL_FLOAT)
+            glVertexAttribPointer(
+                attr.index,
+                attr.size,
+                attr.type,
+                attr.normalized,
+                attr.stride,
+                attr.pointer
+            );
+        else if(attr.type == GL_INT)
+            glVertexAttribIPointer(
+                attr.index,
+                attr.size,
+                attr.normalized,
+                attr.stride,
+                attr.pointer
+            );
     }
 
     m_vertexCount += vb.getVertexCount();
