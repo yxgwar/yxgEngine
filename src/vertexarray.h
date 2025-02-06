@@ -5,6 +5,7 @@
 #include "indexbuffer.h"
 
 #include <vector>
+#include <iostream>
 
 struct VertexAttribute
 {
@@ -23,12 +24,14 @@ public:
     ~VertexArray();
 
     void AddVBO(VertexBuffer& vb, std::vector<VertexAttribute>& attribute);
-    void SetEBO(IndexBuffer& ib, GLsizei count, GLenum type);
+    void SetEBO(IndexBuffer& ib);
 
     void Draw();
 
     void bind();
     void unbind();
+
+    inline unsigned int getID() {return ID;}
 private:
     unsigned int ID;
     int m_vertexCount;

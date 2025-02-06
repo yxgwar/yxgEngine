@@ -127,12 +127,10 @@ int main()
     glfwSetScrollCallback(window, scroll_callback);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
     Shader modelShader("../assets/shaders/test.vs", "../assets/shaders/test.fs");
     Model loadmodel("../assets/models/backpack/backpack.obj");
 
     glfwSetWindowUserPointer(window, &modelShader);
-
     // 设置键盘回调
     glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
         if (key == GLFW_KEY_R && action == GLFW_PRESS) {

@@ -33,7 +33,7 @@ void VertexArray::AddVBO(VertexBuffer &vb, std::vector<VertexAttribute> &attribu
             glVertexAttribIPointer(
                 attr.index,
                 attr.size,
-                attr.normalized,
+                attr.type,
                 attr.stride,
                 attr.pointer
             );
@@ -45,13 +45,13 @@ void VertexArray::AddVBO(VertexBuffer &vb, std::vector<VertexAttribute> &attribu
     unbind();
 }
 
-void VertexArray::SetEBO(IndexBuffer &ib, GLsizei count, GLenum type)
+void VertexArray::SetEBO(IndexBuffer &ib)
 {
     bind();
     ib.bind();
 
-    m_count = count;
-    m_type = type;
+    m_count = ib.getCount();
+    m_type = ib.getType();
 
     unbind();
     ib.unbind();

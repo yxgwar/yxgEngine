@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #define MAX_BONE_INFLUENCE 4
 
@@ -21,7 +22,7 @@ struct Vertex {
     glm::vec3 Normal;
     // texCoords
     glm::vec2 TexCoords;
-    // tangent
+    // // tangent
     glm::vec3 Tangent;
     // bitangent
     glm::vec3 Bitangent;
@@ -34,7 +35,7 @@ struct Vertex {
 class Mesh
 {
 public:
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<std::shared_ptr<Texture>> textures);
 
     void Draw(Shader &shader);
 private:
@@ -42,7 +43,7 @@ private:
 private:
     std::vector<Vertex>       m_vertices;
     std::vector<unsigned int> m_indices;
-    std::vector<Texture>      m_textures;
+    std::vector<std::shared_ptr<Texture>>      m_textures;
 
     VertexBuffer VBO;
     IndexBuffer EBO;

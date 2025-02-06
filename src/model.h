@@ -16,12 +16,12 @@ public:
 
     void Draw(Shader& shader);
 private:
-    std::vector<Mesh> m_meshes;
+    std::vector<std::unique_ptr<Mesh>> m_meshes;
     std::string m_directory;
-    std::vector<Texture> textures_loaded;
+    std::vector<std::shared_ptr<Texture>> textures_loaded;
 
     void loadModel(std::string& path);
     void processNode(aiNode *node, const aiScene *scene);
-    Mesh processMesh(aiMesh *mesh, const aiScene *scene);
-    std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
+    std::unique_ptr<Mesh> processMesh(aiMesh *mesh, const aiScene *scene);
+    std::vector<std::shared_ptr<Texture>> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
 };
