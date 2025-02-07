@@ -35,7 +35,7 @@ struct Vertex {
 class Mesh
 {
 public:
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<std::shared_ptr<Texture>> textures);
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<std::shared_ptr<Texture>> textures, float shininess);
 
     void Draw(Shader &shader);
 private:
@@ -48,4 +48,6 @@ private:
     VertexBuffer VBO;
     IndexBuffer EBO;
     VertexArray VAO;
+
+    float m_shininess;
 };

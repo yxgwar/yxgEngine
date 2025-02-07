@@ -1,9 +1,10 @@
 #include "mesh.h"
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<std::shared_ptr<Texture>> textures)
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<std::shared_ptr<Texture>> textures, float shininess)
     :m_vertices(std::move(vertices)), m_indices(std::move(indices)), m_textures(std::move(textures)),
     VBO((float*)&m_vertices[0], m_vertices.size() * sizeof(Vertex)),
-    EBO(&m_indices[0], m_indices.size() * sizeof(unsigned int))
+    EBO(&m_indices[0], m_indices.size() * sizeof(unsigned int)),
+    m_shininess(shininess)
 {
     setupMesh();
 }
@@ -31,6 +32,7 @@ void Mesh::Draw(Shader &shader)
         m_textures[i]->bind(i);
         shader.setInt((name + number).c_str(), i);
     }
+    shader.setFloat("shininess", m_shininess);
     VAO.Draw();
     glActiveTexture(GL_TEXTURE0);
 }
