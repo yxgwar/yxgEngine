@@ -6,7 +6,7 @@
 class Texture
 {
 public:
-    Texture(const char* path, std::string& type);
+    Texture(const std::string &directory, const char* path, std::string& type);
     ~Texture();
 
     void bind(int index);

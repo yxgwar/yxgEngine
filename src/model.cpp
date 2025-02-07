@@ -140,7 +140,7 @@ std::vector<std::shared_ptr<Texture>> Model::loadMaterialTextures(aiMaterial *ma
         }
         if(!skip)
         {
-            std::shared_ptr<Texture> texture = std::make_shared<Texture>((m_directory + '/' + std::string(str.C_Str())).c_str(), typeName);
+            std::shared_ptr<Texture> texture = std::make_shared<Texture>(m_directory, str.C_Str(), typeName);
             textures.emplace_back(texture);
             textures_loaded.emplace_back(texture);
         }

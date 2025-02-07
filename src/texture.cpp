@@ -1,9 +1,11 @@
 #include "texture.h"
 #include "stb_image.h"
 
-Texture::Texture(const char *path, std::string& type)
+Texture::Texture(const std::string &directory, const char* path, std::string& type)
     :m_type(type), m_path(path)
 {
+    std::string filename = std::string(path);
+    filename = directory + '/' + filename;
     glGenTextures(1, &ID);
     glBindTexture(GL_TEXTURE_2D, ID); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
     // set the texture wrapping parameters
@@ -15,7 +17,7 @@ Texture::Texture(const char *path, std::string& type)
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true);
-    unsigned char *data = stbi_load(path, &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrChannels, 0);
     if (data)
     {
         if(nrChannels == 4)
