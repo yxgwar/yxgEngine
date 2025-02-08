@@ -21,8 +21,7 @@ Texture::~Texture()
 
 void Texture::bind(int index)
 {
-    glActiveTexture(GL_TEXTURE0 + index);
-    glBindTexture(GL_TEXTURE_2D, ID);
+    glBindTextureUnit(index, ID);
 }
 
 void Texture::load(const char *path)

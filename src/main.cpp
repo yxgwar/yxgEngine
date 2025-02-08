@@ -5,6 +5,7 @@
 #include "GLFW/glfw3.h"
 #include "camera.h"
 #include "model.h"
+#include "framebuffer.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -98,8 +99,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 int main()
 {
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
@@ -121,9 +122,9 @@ int main()
     glViewport(0, 0, ScreenWidth, ScreenHeight);
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_STENCIL_TEST);
-    glStencilFunc(GL_EQUAL, 1, 0xFF);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    // glEnable(GL_STENCIL_TEST);
+    // glStencilFunc(GL_EQUAL, 1, 0xFF);
+    // glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
     glEnable(GL_CULL_FACE);
 
@@ -133,8 +134,29 @@ int main()
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     Shader modelShader("../assets/shaders/model.vs", "../assets/shaders/model.fs");
-    Shader stencilShader("../assets/shaders/stencil.vs", "../assets/shaders/stencil.fs");
+    Shader screenShader("../assets/shaders/frameScreen.vs", "../assets/shaders/frameScreen.fs");
+    // Shader stencilShader("../assets/shaders/stencil.vs", "../assets/shaders/stencil.fs");
     Model loadmodel("../assets/models/backpack/backpack.obj");
+
+    float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+        // positions   // texCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f, 1.0f
+    };
+
+    VertexArray VAO;
+    VertexBuffer VBO(quadVertices, sizeof(quadVertices));
+    std::vector<VertexAttribute> attribute = {
+        {0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0},
+        {1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float))}
+    };
+
+    VAO.AddVBO(VBO, attribute);
 
     glfwSetWindowUserPointer(window, &modelShader);
     // 设置键盘回调
@@ -149,6 +171,13 @@ int main()
         }
     });
 
+    FrameBuffer FBO;
+    FBO.attachColor(ScreenWidth, ScreenHeight);
+    FBO.attachDepthStencil(ScreenWidth, ScreenHeight);
+
+    screenShader.use();
+    screenShader.setInt("screenTexture", 0);
+
     glm::vec3 pointLightPositions = glm::vec3( 0.7f,  0.2f,  2.0f);
 
     while(!glfwWindowShouldClose(window))
@@ -162,6 +191,9 @@ int main()
         glfwGetWindowSize(window, &ScreenWidth, &ScreenHeight);
 
         processInput(window);
+
+        FBO.bind();
+        glEnable(GL_DEPTH_TEST);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -187,24 +219,32 @@ int main()
         modelShader.setMat4("model", loadmodel.getModel());
         modelShader.setMat4("NormalM", loadmodel.getNormalM());
 
-        glStencilFunc(GL_ALWAYS, 1, 0xFF);
-        glStencilMask(0xFF);
+        // glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        // glStencilMask(0xFF);
 
         loadmodel.Draw(modelShader);
 
-        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        glStencilMask(0x00);
+        FBO.unbind();
         glDisable(GL_DEPTH_TEST);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
+        glClear(GL_COLOR_BUFFER_BIT);
+        screenShader.use();
+        FBO.bindTexture();
+        VAO.Draw();
 
-        stencilShader.use();
-        stencilShader.setMat4("projection", camera.getProjection());
-        stencilShader.setMat4("view", camera.getView());
-        stencilShader.setMat4("model", loadmodel.getModel());
-        loadmodel.Draw(stencilShader);
+        // glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        // glStencilMask(0x00);
+        // glDisable(GL_DEPTH_TEST);
 
-        glStencilMask(0xFF);
+        // stencilShader.use();
+        // stencilShader.setMat4("projection", camera.getProjection());
+        // stencilShader.setMat4("view", camera.getView());
+        // stencilShader.setMat4("model", loadmodel.getModel());
+        // loadmodel.Draw(stencilShader);
+
+        // glStencilMask(0xFF);
         // glStencilFunc(GL_ALWAYS, 0, 0xFF);
-        glEnable(GL_DEPTH_TEST);
+        // glEnable(GL_DEPTH_TEST);
 
         glfwPollEvents();
         glfwSwapBuffers(window);
