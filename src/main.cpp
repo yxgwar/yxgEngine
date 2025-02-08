@@ -125,6 +125,8 @@ int main()
     glStencilFunc(GL_EQUAL, 1, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
+    glEnable(GL_CULL_FACE);
+
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
