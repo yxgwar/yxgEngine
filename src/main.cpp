@@ -118,9 +118,12 @@ int main()
         return -1;
     }
 
-    glEnable(GL_DEPTH_TEST);
-
     glViewport(0, 0, ScreenWidth, ScreenHeight);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_EQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
@@ -128,6 +131,7 @@ int main()
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     Shader modelShader("../assets/shaders/model.vs", "../assets/shaders/model.fs");
+    Shader stencilShader("../assets/shaders/stencil.vs", "../assets/shaders/stencil.fs");
     Model loadmodel("../assets/models/backpack/backpack.obj");
 
     glfwSetWindowUserPointer(window, &modelShader);
@@ -143,12 +147,7 @@ int main()
         }
     });
 
-    glm::vec3 pointLightPositions[] = {
-        glm::vec3( 0.7f,  0.2f,  2.0f),
-        glm::vec3( 2.3f, -3.3f, -4.0f),
-        glm::vec3(-4.0f,  2.0f, -12.0f),
-        glm::vec3( 0.0f,  0.0f, -3.0f)
-    };
+    glm::vec3 pointLightPositions = glm::vec3( 0.7f,  0.2f,  2.0f);
 
     while(!glfwWindowShouldClose(window))
     {
@@ -163,7 +162,7 @@ int main()
         processInput(window);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         modelShader.use();
 
@@ -172,59 +171,38 @@ int main()
         modelShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
         modelShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
         // point light 1
-        modelShader.setVec3("pointLights[0].position", pointLightPositions[0]);
-        modelShader.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
-        modelShader.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
-        modelShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
-        modelShader.setFloat("pointLights[0].constant", 1.0f);
-        modelShader.setFloat("pointLights[0].linear", 0.09f);
-        modelShader.setFloat("pointLights[0].quadratic", 0.032f);
-        // point light 2
-        modelShader.setVec3("pointLights[1].position", pointLightPositions[1]);
-        modelShader.setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
-        modelShader.setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
-        modelShader.setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
-        modelShader.setFloat("pointLights[1].constant", 1.0f);
-        modelShader.setFloat("pointLights[1].linear", 0.09f);
-        modelShader.setFloat("pointLights[1].quadratic", 0.032f);
-        // point light 3
-        modelShader.setVec3("pointLights[2].position", pointLightPositions[2]);
-        modelShader.setVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
-        modelShader.setVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
-        modelShader.setVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
-        modelShader.setFloat("pointLights[2].constant", 1.0f);
-        modelShader.setFloat("pointLights[2].linear", 0.09f);
-        modelShader.setFloat("pointLights[2].quadratic", 0.032f);
-        // point light 4
-        modelShader.setVec3("pointLights[3].position", pointLightPositions[3]);
-        modelShader.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
-        modelShader.setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
-        modelShader.setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
-        modelShader.setFloat("pointLights[3].constant", 1.0f);
-        modelShader.setFloat("pointLights[3].linear", 0.09f);
-        modelShader.setFloat("pointLights[3].quadratic", 0.032f);
-        // spotLight
-        modelShader.setVec3("spotLight.position", camera.getPosition());
-        modelShader.setVec3("spotLight.direction", camera.getFront());
-        modelShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-        modelShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
-        modelShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
-        modelShader.setFloat("spotLight.constant", 1.0f);
-        modelShader.setFloat("spotLight.linear", 0.09f);
-        modelShader.setFloat("spotLight.quadratic", 0.032f);
-        modelShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-        modelShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+        modelShader.setVec3("pointLights.position", pointLightPositions);
+        modelShader.setVec3("pointLights.ambient", 0.05f, 0.05f, 0.05f);
+        modelShader.setVec3("pointLights.diffuse", 0.8f, 0.8f, 0.8f);
+        modelShader.setVec3("pointLights.specular", 1.0f, 1.0f, 1.0f);
+        modelShader.setFloat("pointLights.constant", 1.0f);
+        modelShader.setFloat("pointLights.linear", 0.09f);
+        modelShader.setFloat("pointLights.quadratic", 0.032f);
 
         modelShader.setVec3("viewPos", camera.getPosition());
         modelShader.setMat4("projection", camera.getProjection());
         modelShader.setMat4("view", camera.getView());
         modelShader.setMat4("model", loadmodel.getModel());
         modelShader.setMat4("NormalM", loadmodel.getNormalM());
-        // if(ScreenWidth >= ScreenHeight)
-        //     modelShader.setVec2f("resolution", ScreenWidth, ScreenHeight);
-        // else
-        //     modelShader.setVec2f("resolution", ScreenHeight, ScreenWidth);
+
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF);
+
         loadmodel.Draw(modelShader);
+
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilMask(0x00);
+        glDisable(GL_DEPTH_TEST);
+
+        stencilShader.use();
+        stencilShader.setMat4("projection", camera.getProjection());
+        stencilShader.setMat4("view", camera.getView());
+        stencilShader.setMat4("model", loadmodel.getModel());
+        loadmodel.Draw(stencilShader);
+
+        glStencilMask(0xFF);
+        // glStencilFunc(GL_ALWAYS, 0, 0xFF);
+        glEnable(GL_DEPTH_TEST);
 
         glfwPollEvents();
         glfwSwapBuffers(window);
