@@ -24,12 +24,16 @@ bool isPressed = false;
 
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
+int viewportWidth = ScreenWidth;
+int viewportHeight = ScreenHeight;
+int offsetX = 0;
+int offsetY = 0;
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     float targetAspect = (float)ScreenWidth / ScreenHeight;
     float windowAspect = (float)width / height;
 
-    int viewportWidth, viewportHeight, offsetX, offsetY;
     if(windowAspect > targetAspect)
     {
         viewportHeight = height;
@@ -44,7 +48,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
         offsetX = 0;
         offsetY = (height - viewportHeight) / 2;
     }
-    glViewport(offsetX, offsetY, viewportWidth, viewportHeight);
 }
 
 void processInput(GLFWwindow *window)
@@ -188,11 +191,11 @@ int main()
 
         std::string title = "FPS:" + std::to_string(1.0f / deltaTime);
         glfwSetWindowTitle(window, title.c_str());
-        glfwGetWindowSize(window, &ScreenWidth, &ScreenHeight);
 
         processInput(window);
 
         FBO.bind();
+        glViewport(0, 0, ScreenWidth, ScreenHeight);
         glEnable(GL_DEPTH_TEST);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -225,12 +228,15 @@ int main()
         loadmodel.Draw(modelShader);
 
         FBO.unbind();
+        glViewport(offsetX, offsetY, viewportWidth, viewportHeight);
+        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDisable(GL_DEPTH_TEST);
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
         glClear(GL_COLOR_BUFFER_BIT);
         screenShader.use();
         FBO.bindTexture();
         VAO.Draw();
+        // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         // glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
         // glStencilMask(0x00);
