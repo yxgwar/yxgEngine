@@ -15,6 +15,13 @@ void Model::Draw(Shader &shader)
         mesh->Draw(shader);
 }
 
+void Model::SetPosition(glm::vec3 pos)
+{
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, pos);
+    NormalM = glm::transpose(glm::inverse(model));
+}
+
 void Model::loadModel(std::string &path)
 {
     Assimp::Importer importer;

@@ -17,8 +17,8 @@ enum class CameraKeyCode
 class Camera
 {
 public:
-    Camera(float width, float height, float movementSpeed = 2.5f, float mouseSpeed = 0.1f, float fov = 45.0f);
-    Camera(float width, float height, glm::vec3 pos, glm::vec3 front, glm::vec3 up, float movementSpeed = 2.5f, float mouseSpeed = 0.1f, float fov = 45.0f);
+    Camera(float width, float height, float movementSpeed = 5.0f, float mouseSpeed = 0.1f, float fov = 45.0f);
+    Camera(float width, float height, glm::vec3 pos, glm::vec3 front, glm::vec3 up, float movementSpeed = 5.0f, float mouseSpeed = 0.1f, float fov = 45.0f);
 
     inline glm::mat4 getView() const {return view;}
     inline glm::mat4 getProjection() const {return projection;}

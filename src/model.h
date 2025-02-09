@@ -16,6 +16,8 @@ public:
 
     void Draw(Shader& shader);
 
+    void SetPosition(glm::vec3 pos);
+
     inline glm::mat4 getModel() {return model;}
     inline glm::mat4 getNormalM() {return NormalM;}
 private:

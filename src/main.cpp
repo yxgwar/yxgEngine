@@ -6,6 +6,7 @@
 #include "camera.h"
 #include "model.h"
 #include "framebuffer.h"
+#include "texturecube.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -138,8 +139,13 @@ int main()
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     Shader modelShader("../assets/shaders/model.vs", "../assets/shaders/model.fs");
     Shader screenShader("../assets/shaders/frameScreen.vs", "../assets/shaders/frameScreen.fs");
+    Shader skyboxShader("../assets/shaders/skybox.vs", "../assets/shaders/skybox.fs");
+    Shader reflectShader("../assets/shaders/reflect.vs", "../assets/shaders/reflect.fs");
+    Shader refractShader("../assets/shaders/reflect.vs", "../assets/shaders/refract.fs");
     // Shader stencilShader("../assets/shaders/stencil.vs", "../assets/shaders/stencil.fs");
     Model loadmodel("../assets/models/backpack/backpack.obj");
+    Model loadmodel1("../assets/models/backpack/backpack.obj");
+    Model loadmodel2("../assets/models/backpack/backpack.obj");
 
     float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
         // positions   // texCoords
@@ -182,6 +188,80 @@ int main()
     screenShader.setInt("screenTexture", 0);
 
     glm::vec3 pointLightPositions = glm::vec3( 0.7f,  0.2f,  2.0f);
+
+    std::vector<std::string> faces
+    {
+        "../assets/images/skybox/right.jpg",
+        "../assets/images/skybox/left.jpg",
+        "../assets/images/skybox/top.jpg",
+        "../assets/images/skybox/bottom.jpg",
+        "../assets/images/skybox/front.jpg",
+        "../assets/images/skybox/back.jpg"
+    };
+
+    TextureCube skybox(faces);
+
+    float skyboxVertices[] = {
+        // positions          
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+        1.0f,  1.0f, -1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+        1.0f, -1.0f,  1.0f
+    };
+
+    VertexArray skyVAO;
+    VertexBuffer skyVBO(skyboxVertices, sizeof(skyboxVertices));
+
+    skyboxShader.use();
+    skyboxShader.setInt("skybox", 0);
+
+    attribute = {
+        {0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0}
+    };
+    skyVAO.AddVBO(skyVBO, attribute);
+
+    reflectShader.use();
+    reflectShader.setInt("skybox", 0);
+
+    refractShader.use();
+    refractShader.setInt("skybox", 0);
 
     while(!glfwWindowShouldClose(window))
     {
@@ -226,6 +306,32 @@ int main()
         // glStencilMask(0xFF);
 
         loadmodel.Draw(modelShader);
+
+        reflectShader.use();
+        loadmodel1.SetPosition(glm::vec3(5.0f, 0.0f, 0.0f));
+        reflectShader.setVec3("cameraPos", camera.getPosition());
+        reflectShader.setMat4("projection", camera.getProjection());
+        reflectShader.setMat4("view", camera.getView());
+        reflectShader.setMat4("model", loadmodel1.getModel());
+        reflectShader.setMat4("NormalM", loadmodel1.getNormalM());
+        loadmodel1.Draw(modelShader);
+
+        refractShader.use();
+        loadmodel2.SetPosition(glm::vec3(-5.0f, 0.0f, 0.0f));
+        reflectShader.setVec3("cameraPos", camera.getPosition());
+        reflectShader.setMat4("projection", camera.getProjection());
+        reflectShader.setMat4("view", camera.getView());
+        reflectShader.setMat4("model", loadmodel2.getModel());
+        reflectShader.setMat4("NormalM", loadmodel2.getNormalM());
+        loadmodel2.Draw(modelShader);
+
+        glDepthFunc(GL_LEQUAL);
+        skyboxShader.use();
+        skyboxShader.setMat4("projection", camera.getProjection());
+        skyboxShader.setMat4("view", glm::mat4(glm::mat3(camera.getView())));
+        skybox.bind();
+        skyVAO.Draw();
+        glDepthFunc(GL_LESS);
 
         FBO.unbind();
         glViewport(offsetX, offsetY, viewportWidth, viewportHeight);
