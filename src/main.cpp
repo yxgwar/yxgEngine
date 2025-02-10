@@ -7,6 +7,7 @@
 #include "model.h"
 #include "framebuffer.h"
 #include "texturecube.h"
+#include "uniformbuffer.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -145,7 +146,9 @@ int main()
     // Shader stencilShader("../assets/shaders/stencil.vs", "../assets/shaders/stencil.fs");
     Model loadmodel("../assets/models/backpack/backpack.obj");
     Model loadmodel1("../assets/models/backpack/backpack.obj");
+    loadmodel1.SetPosition(glm::vec3(5.0f, 0.0f, 0.0f));
     Model loadmodel2("../assets/models/backpack/backpack.obj");
+    loadmodel2.SetPosition(glm::vec3(-5.0f, 0.0f, 0.0f));
 
     float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
         // positions   // texCoords
@@ -263,6 +266,10 @@ int main()
     refractShader.use();
     refractShader.setInt("skybox", 0);
 
+    UniformBuffer UBO(2 * sizeof(glm::mat4));
+    UBO.bind(0, 2 * sizeof(glm::mat4));
+    UBO.setData(0, sizeof(glm::mat4), glm::value_ptr(camera.getProjection()));
+
     while(!glfwWindowShouldClose(window))
     {
         float currentTime = glfwGetTime();
@@ -273,6 +280,8 @@ int main()
         glfwSetWindowTitle(window, title.c_str());
 
         processInput(window);
+
+        UBO.setData(sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(camera.getView()));
 
         FBO.bind();
         glViewport(0, 0, ScreenWidth, ScreenHeight);
@@ -297,8 +306,6 @@ int main()
         modelShader.setFloat("pointLights.quadratic", 0.032f);
 
         modelShader.setVec3("viewPos", camera.getPosition());
-        modelShader.setMat4("projection", camera.getProjection());
-        modelShader.setMat4("view", camera.getView());
         modelShader.setMat4("model", loadmodel.getModel());
         modelShader.setMat4("NormalM", loadmodel.getNormalM());
 
@@ -308,27 +315,19 @@ int main()
         loadmodel.Draw(modelShader);
 
         reflectShader.use();
-        loadmodel1.SetPosition(glm::vec3(5.0f, 0.0f, 0.0f));
         reflectShader.setVec3("cameraPos", camera.getPosition());
-        reflectShader.setMat4("projection", camera.getProjection());
-        reflectShader.setMat4("view", camera.getView());
         reflectShader.setMat4("model", loadmodel1.getModel());
         reflectShader.setMat4("NormalM", loadmodel1.getNormalM());
         loadmodel1.Draw(modelShader);
 
         refractShader.use();
-        loadmodel2.SetPosition(glm::vec3(-5.0f, 0.0f, 0.0f));
         reflectShader.setVec3("cameraPos", camera.getPosition());
-        reflectShader.setMat4("projection", camera.getProjection());
-        reflectShader.setMat4("view", camera.getView());
         reflectShader.setMat4("model", loadmodel2.getModel());
         reflectShader.setMat4("NormalM", loadmodel2.getNormalM());
         loadmodel2.Draw(modelShader);
 
         glDepthFunc(GL_LEQUAL);
         skyboxShader.use();
-        skyboxShader.setMat4("projection", camera.getProjection());
-        skyboxShader.setMat4("view", glm::mat4(glm::mat3(camera.getView())));
         skybox.bind();
         skyVAO.Draw();
         glDepthFunc(GL_LESS);
