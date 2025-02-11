@@ -12,7 +12,7 @@
 class Shader
 {
 public:
-    Shader(const char* vertexPath, const char* fragmentPath);
+    Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
     ~Shader();
     void use();
 
@@ -28,7 +28,8 @@ public:
     
     bool reload();
 private:
-    bool loadFromFile(const char* vertexPath, const char* fragmentPath);
+    bool loadFromFile(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
+    bool checkError(GLuint shader, std::string type);
 private:
     unsigned int ID;
     std::string m_vertexPath, m_fragmentPath;

@@ -143,12 +143,11 @@ int main()
     Shader skyboxShader("../assets/shaders/skybox.vs", "../assets/shaders/skybox.fs");
     Shader reflectShader("../assets/shaders/reflect.vs", "../assets/shaders/reflect.fs");
     Shader refractShader("../assets/shaders/reflect.vs", "../assets/shaders/refract.fs");
+    Shader testShader("../assets/shaders/test.vs", "../assets/shaders/test.fs");
+    Shader exploreShader("../assets/shaders/explore/explore.vs", "../assets/shaders/explore/explore.fs", "../assets/shaders/explore/explore.gs");
+    Shader normalVisualShader("../assets/shaders/normalVisual/normalVisual.vs", "../assets/shaders/normalVisual/normalVisual.fs", "../assets/shaders/normalVisual/normalVisual.gs");
     // Shader stencilShader("../assets/shaders/stencil.vs", "../assets/shaders/stencil.fs");
     Model loadmodel("../assets/models/backpack/backpack.obj");
-    Model loadmodel1("../assets/models/backpack/backpack.obj");
-    loadmodel1.SetPosition(glm::vec3(5.0f, 0.0f, 0.0f));
-    Model loadmodel2("../assets/models/backpack/backpack.obj");
-    loadmodel2.SetPosition(glm::vec3(-5.0f, 0.0f, 0.0f));
 
     float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
         // positions   // texCoords
@@ -161,14 +160,14 @@ int main()
          1.0f,  1.0f,  1.0f, 1.0f
     };
 
-    VertexArray VAO;
-    VertexBuffer VBO(quadVertices, sizeof(quadVertices));
+    VertexArray screenVAO;
+    VertexBuffer screenVBO(quadVertices, sizeof(quadVertices));
     std::vector<VertexAttribute> attribute = {
         {0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0},
         {1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float))}
     };
 
-    VAO.AddVBO(VBO, attribute);
+    screenVAO.AddVBO(screenVBO, attribute);
 
     glfwSetWindowUserPointer(window, &modelShader);
     // 设置键盘回调
@@ -191,6 +190,19 @@ int main()
     screenShader.setInt("screenTexture", 0);
 
     glm::vec3 pointLightPositions = glm::vec3( 0.7f,  0.2f,  2.0f);
+    modelShader.use();
+    modelShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+    modelShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+    modelShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+    modelShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+    // point light 1
+    modelShader.setVec3("pointLights.position", pointLightPositions);
+    modelShader.setVec3("pointLights.ambient", 0.05f, 0.05f, 0.05f);
+    modelShader.setVec3("pointLights.diffuse", 0.8f, 0.8f, 0.8f);
+    modelShader.setVec3("pointLights.specular", 1.0f, 1.0f, 1.0f);
+    modelShader.setFloat("pointLights.constant", 1.0f);
+    modelShader.setFloat("pointLights.linear", 0.09f);
+    modelShader.setFloat("pointLights.quadratic", 0.032f);
 
     std::vector<std::string> faces
     {
@@ -291,20 +303,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         modelShader.use();
-
-        modelShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-        modelShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-        modelShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-        modelShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-        // point light 1
-        modelShader.setVec3("pointLights.position", pointLightPositions);
-        modelShader.setVec3("pointLights.ambient", 0.05f, 0.05f, 0.05f);
-        modelShader.setVec3("pointLights.diffuse", 0.8f, 0.8f, 0.8f);
-        modelShader.setVec3("pointLights.specular", 1.0f, 1.0f, 1.0f);
-        modelShader.setFloat("pointLights.constant", 1.0f);
-        modelShader.setFloat("pointLights.linear", 0.09f);
-        modelShader.setFloat("pointLights.quadratic", 0.032f);
-
+        loadmodel.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
         modelShader.setVec3("viewPos", camera.getPosition());
         modelShader.setMat4("model", loadmodel.getModel());
         modelShader.setMat4("NormalM", loadmodel.getNormalM());
@@ -315,16 +314,34 @@ int main()
         loadmodel.Draw(modelShader);
 
         reflectShader.use();
+        loadmodel.SetPosition(glm::vec3(5.0f, 0.0f, 0.0f));
         reflectShader.setVec3("cameraPos", camera.getPosition());
-        reflectShader.setMat4("model", loadmodel1.getModel());
-        reflectShader.setMat4("NormalM", loadmodel1.getNormalM());
-        loadmodel1.Draw(modelShader);
+        reflectShader.setMat4("model", loadmodel.getModel());
+        reflectShader.setMat4("NormalM", loadmodel.getNormalM());
+        loadmodel.Draw(reflectShader);
 
         refractShader.use();
-        reflectShader.setVec3("cameraPos", camera.getPosition());
-        reflectShader.setMat4("model", loadmodel2.getModel());
-        reflectShader.setMat4("NormalM", loadmodel2.getNormalM());
-        loadmodel2.Draw(modelShader);
+        loadmodel.SetPosition(glm::vec3(-5.0f, 0.0f, 0.0f));
+        refractShader.setVec3("cameraPos", camera.getPosition());
+        refractShader.setMat4("model", loadmodel.getModel());
+        refractShader.setMat4("NormalM", loadmodel.getNormalM());
+        loadmodel.Draw(refractShader);
+
+        exploreShader.use();
+        loadmodel.SetPosition(glm::vec3(10.0f, 0.0f, 0.0f));
+        exploreShader.setMat4("model", loadmodel.getModel());
+        exploreShader.setFloat("time", glfwGetTime());
+        loadmodel.Draw(exploreShader);
+
+        testShader.use();
+        loadmodel.SetPosition(glm::vec3(-10.0f, 0.0f, 0.0f));
+        testShader.setMat4("model", loadmodel.getModel());
+        loadmodel.Draw(testShader);
+
+        normalVisualShader.use();
+        normalVisualShader.setMat4("model", loadmodel.getModel());
+        normalVisualShader.setMat4("NormalM", loadmodel.getNormalM());
+        loadmodel.Draw(normalVisualShader);
 
         glDepthFunc(GL_LEQUAL);
         skyboxShader.use();
@@ -340,7 +357,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         screenShader.use();
         FBO.bindTexture();
-        VAO.Draw();
+        screenVAO.Draw();
         // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         // glStencilFunc(GL_NOTEQUAL, 1, 0xFF);

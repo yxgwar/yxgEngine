@@ -11,6 +11,7 @@ Model::Model(std::string&& path)
 
 void Model::Draw(Shader &shader)
 {
+    shader.use();
     for(auto& mesh: m_meshes)
         mesh->Draw(shader);
 }
