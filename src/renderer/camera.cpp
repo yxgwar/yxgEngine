@@ -1,7 +1,7 @@
 #include "camera.h"
 
 Camera::Camera(float width, float height, float movementSpeed, float mouseSpeed, float fov)
-    :m_width(width), m_height(height), pos(0.0f, 0.0f, 15.0f), front(0.0f, 0.0f, -1.0f), up(0.0f, 1.0f, 0.0f), movementSpeed(movementSpeed), mouseSpeed(mouseSpeed), m_yaw(-90.0f), m_pitch(0.0f), m_fov(fov)
+    :m_width(width), m_height(height), pos(0.0f, 0.0f, 15.0f), front(0.0f, 0.0f, -1.0f), up(0.0f, 1.0f, 0.0f), movementSpeed(movementSpeed), mouseSpeed(mouseSpeed), m_yaw(-90.0f), m_pitch(0.0f), m_fov(fov), Foucs(true)
 {
     lastX = width / 2.0f;
     lastY = height / 2.0f;
@@ -12,7 +12,7 @@ Camera::Camera(float width, float height, float movementSpeed, float mouseSpeed,
 }
 
 Camera::Camera(float width, float height, glm::vec3 pos, glm::vec3 front, glm::vec3 up, float movementSpeed, float mouseSpeed, float fov)
-    :m_width(width), m_height(height), pos(pos), front(front), up(up), movementSpeed(movementSpeed), mouseSpeed(mouseSpeed), m_yaw(-90.0f), m_pitch(0.0f), m_fov(fov)
+    :m_width(width), m_height(height), pos(pos), front(front), up(up), movementSpeed(movementSpeed), mouseSpeed(mouseSpeed), m_yaw(-90.0f), m_pitch(0.0f), m_fov(fov), Foucs(true)
 {
     lastX = width / 2.0f;
     lastY = height / 2.0f;
@@ -103,6 +103,7 @@ void Camera::ScrollControl(float yOffset)
 void Camera::FreeCamera()
 {
     firstMouse = true;
+    Foucs = false;
 }
 
 void Camera::calView()

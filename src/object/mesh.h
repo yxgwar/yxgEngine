@@ -3,11 +3,11 @@
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "vertexarray.h"
-#include "indexbuffer.h"
-#include "vertexbuffer.h"
-#include "shader.h"
-#include "texture.h"
+#include "renderer/vertexarray.h"
+#include "renderer/indexbuffer.h"
+#include "renderer/vertexbuffer.h"
+#include "renderer/shader.h"
+#include "renderer/texture.h"
 
 #include <vector>
 #include <string>

@@ -1,128 +1,32 @@
 #include <iostream>
 #include <cmath>
 
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
-#include "camera.h"
-#include "model.h"
-#include "framebuffer.h"
-#include "texturecube.h"
-#include "uniformbuffer.h"
+#include "window.h"
+#include "renderer/camera.h"
+#include "object/model.h"
+#include "renderer/framebuffer.h"
+#include "renderer/texturecube.h"
+#include "renderer/uniformbuffer.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-int ScreenWidth = 1920;
-int ScreenHeight = 1080;
-
-Camera camera((float)ScreenWidth, (float)ScreenHeight);
-
-float deltaTime = 0.0f;
-float lastTime = 0.0f;
-
-bool isFocus = true;
-bool isPressed = false;
-
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-
-int viewportWidth = ScreenWidth;
-int viewportHeight = ScreenHeight;
-int offsetX = 0;
-int offsetY = 0;
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    float targetAspect = (float)ScreenWidth / ScreenHeight;
-    float windowAspect = (float)width / height;
-
-    if(windowAspect > targetAspect)
-    {
-        viewportHeight = height;
-        viewportWidth = (int)(height * targetAspect);
-        offsetX = (width - viewportWidth) / 2;
-        offsetY = 0;
-    }
-    else
-    {
-        viewportWidth = width;
-        viewportHeight = (int)(width / targetAspect);
-        offsetX = 0;
-        offsetY = (height - viewportHeight) / 2;
-    }
-}
-
-void processInput(GLFWwindow *window)
-{
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS && !isPressed)
-    {
-        if(isFocus)
-        {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            isFocus = false;
-            camera.FreeCamera();
-        }
-        else
-        {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            isFocus = true;
-        }
-        isPressed = true;
-    }
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE)
-        isPressed = false;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.KeyboardControl(CameraKeyCode::FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.KeyboardControl(CameraKeyCode::BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.KeyboardControl(CameraKeyCode::LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.KeyboardControl(CameraKeyCode::RIGHT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        camera.KeyboardControl(CameraKeyCode::UP, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        camera.KeyboardControl(CameraKeyCode::DOWN, deltaTime);
-}
-
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
-{
-    if(isFocus)
-    {
-        float xpos = static_cast<float>(xposIn);
-        float ypos = static_cast<float>(yposIn);
-        camera.MouseControl(xpos, ypos);
-    }
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    if(isFocus)
-        camera.ScrollControl(yoffset);
-}
-
 int main()
 {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    int ScreenWidth = 1920;
+    int ScreenHeight = 1080;
 
-    GLFWwindow* window = glfwCreateWindow(ScreenWidth, ScreenHeight, "LearnOpenGL", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
+    Window window(ScreenWidth, ScreenHeight);
+    Camera camera((float)ScreenWidth, (float)ScreenHeight);
+    WindowData windowData;
+    windowData.camera = &camera;
+    window.SetCallback(&windowData);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
+    float deltaTime = 0.0f;
+    float lastTime = 0.0f;
+
+    glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
     glViewport(0, 0, ScreenWidth, ScreenHeight);
 
@@ -133,11 +37,6 @@ int main()
 
     glEnable(GL_CULL_FACE);
 
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
-
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     Shader modelShader("../assets/shaders/model.vs", "../assets/shaders/model.fs");
     Shader screenShader("../assets/shaders/frameScreen.vs", "../assets/shaders/frameScreen.fs");
     Shader skyboxShader("../assets/shaders/skybox.vs", "../assets/shaders/skybox.fs");
@@ -168,19 +67,6 @@ int main()
     };
 
     screenVAO.AddVBO(screenVBO, attribute);
-
-    glfwSetWindowUserPointer(window, &modelShader);
-    // 设置键盘回调
-    glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
-        if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-            Shader* shader = static_cast<Shader*>(glfwGetWindowUserPointer(window));
-            if (shader->reload()) {
-                std::cout << "Shader hot reload success" << std::endl;
-            } else {
-                std::cerr << "Shader hot reload fail" << std::endl;
-            }
-        }
-    });
 
     FrameBuffer FBO;
     FBO.attachColor(ScreenWidth, ScreenHeight);
@@ -282,21 +168,20 @@ int main()
     UBO.bind(0, 2 * sizeof(glm::mat4));
     UBO.setData(0, sizeof(glm::mat4), glm::value_ptr(camera.getProjection()));
 
-    while(!glfwWindowShouldClose(window))
+    while(window.OpenWindow())
     {
-        float currentTime = glfwGetTime();
+        float currentTime = window.GetTime();
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
         std::string title = "FPS:" + std::to_string(1.0f / deltaTime);
-        glfwSetWindowTitle(window, title.c_str());
-
-        processInput(window);
+        window.SetTitle(title);
+        window.ProcessInput(camera, deltaTime);
 
         UBO.setData(sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(camera.getView()));
 
         FBO.bind();
-        glViewport(0, 0, ScreenWidth, ScreenHeight);
+        // glViewport(0, 0, ScreenWidth, ScreenHeight);
         glEnable(GL_DEPTH_TEST);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -350,7 +235,7 @@ int main()
         glDepthFunc(GL_LESS);
 
         FBO.unbind();
-        glViewport(offsetX, offsetY, viewportWidth, viewportHeight);
+        // glViewport(offsetX, offsetY, viewportWidth, viewportHeight);
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDisable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
@@ -374,8 +259,7 @@ int main()
         // glStencilFunc(GL_ALWAYS, 0, 0xFF);
         // glEnable(GL_DEPTH_TEST);
 
-        glfwPollEvents();
-        glfwSwapBuffers(window);
+        window.OnUpdate();
     }
 
     glfwTerminate();

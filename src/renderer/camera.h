@@ -30,6 +30,8 @@ public:
     void ScrollControl(float yOffset);
 
     void FreeCamera();
+
+    bool Foucs;
 private:
     void calView();
     void calProjection();
