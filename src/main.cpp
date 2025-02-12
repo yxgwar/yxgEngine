@@ -13,6 +13,12 @@
 
 #include "custom/FrameBufferObject.h"
 #include "custom/SkyboxObject.h"
+#include "custom/BlinnPhongObject.h"
+#include "custom/ReflectObject.h"
+#include "custom/RefractObject.h"
+#include "custom/ExploreObject.h"
+#include "custom/TestObject.h"
+#include "custom/NormalVisualObject.h"
 
 int main()
 {
@@ -33,34 +39,15 @@ int main()
     FrameBufferObject fbo(ScreenWidth, ScreenHeight);
     SkyboxObject skybox;
 
-    Shader modelShader("../assets/shaders/model.vs", "../assets/shaders/model.fs");
-    Shader reflectShader("../assets/shaders/reflect.vs", "../assets/shaders/reflect.fs");
-    Shader refractShader("../assets/shaders/reflect.vs", "../assets/shaders/refract.fs");
-    Shader testShader("../assets/shaders/test.vs", "../assets/shaders/test.fs");
-    Shader exploreShader("../assets/shaders/explore/explore.vs", "../assets/shaders/explore/explore.fs", "../assets/shaders/explore/explore.gs");
-    Shader normalVisualShader("../assets/shaders/normalVisual/normalVisual.vs", "../assets/shaders/normalVisual/normalVisual.fs", "../assets/shaders/normalVisual/normalVisual.gs");
-    Model loadmodel("../assets/models/backpack/backpack.obj");
+    std::shared_ptr<Model> model = std::make_shared<Model>("../assets/models/backpack/backpack.obj");
 
-    glm::vec3 pointLightPositions = glm::vec3( 0.7f,  0.2f,  2.0f);
-    modelShader.use();
-    modelShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-    modelShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-    modelShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-    modelShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-    // point light 1
-    modelShader.setVec3("pointLights.position", pointLightPositions);
-    modelShader.setVec3("pointLights.ambient", 0.05f, 0.05f, 0.05f);
-    modelShader.setVec3("pointLights.diffuse", 0.8f, 0.8f, 0.8f);
-    modelShader.setVec3("pointLights.specular", 1.0f, 1.0f, 1.0f);
-    modelShader.setFloat("pointLights.constant", 1.0f);
-    modelShader.setFloat("pointLights.linear", 0.09f);
-    modelShader.setFloat("pointLights.quadratic", 0.032f);
-
-    reflectShader.use();
-    reflectShader.setInt("skybox", 0);
-
-    refractShader.use();
-    refractShader.setInt("skybox", 0);
+    std::vector<std::unique_ptr<ModelTest>> objects;
+    objects.emplace_back(std::make_unique<BlinnPhongObject>(model));
+    objects.emplace_back(std::make_unique<ReflectObject>(model));
+    objects.emplace_back(std::make_unique<RefractObject>(model));
+    objects.emplace_back(std::make_unique<ExploreObject>(model));
+    objects.emplace_back(std::make_unique<TestObject>(model));
+    objects.emplace_back(std::make_unique<NormalVisualObject>(model));
 
     UniformBuffer UBO(2 * sizeof(glm::mat4));
     UBO.bind(0, 2 * sizeof(glm::mat4));
@@ -76,48 +63,15 @@ int main()
         window.SetTitle(title);
         window.ProcessInput(camera, deltaTime);
 
-        Renderer::RendererStart();
-
         UBO.setData(sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(camera.getView()));
 
         fbo.StartDrawOnFrameBuffer();
+        Renderer::RendererStart();
 
-        modelShader.use();
-        loadmodel.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-        modelShader.setVec3("viewPos", camera.getPosition());
-        modelShader.setMat4("model", loadmodel.getModel());
-        modelShader.setMat4("NormalM", loadmodel.getNormalM());
-        loadmodel.Draw(modelShader);
-
-        reflectShader.use();
-        loadmodel.SetPosition(glm::vec3(5.0f, 0.0f, 0.0f));
-        reflectShader.setVec3("cameraPos", camera.getPosition());
-        reflectShader.setMat4("model", loadmodel.getModel());
-        reflectShader.setMat4("NormalM", loadmodel.getNormalM());
-        loadmodel.Draw(reflectShader);
-
-        refractShader.use();
-        loadmodel.SetPosition(glm::vec3(-5.0f, 0.0f, 0.0f));
-        refractShader.setVec3("cameraPos", camera.getPosition());
-        refractShader.setMat4("model", loadmodel.getModel());
-        refractShader.setMat4("NormalM", loadmodel.getNormalM());
-        loadmodel.Draw(refractShader);
-
-        exploreShader.use();
-        loadmodel.SetPosition(glm::vec3(10.0f, 0.0f, 0.0f));
-        exploreShader.setMat4("model", loadmodel.getModel());
-        exploreShader.setFloat("time", glfwGetTime());
-        loadmodel.Draw(exploreShader);
-
-        testShader.use();
-        loadmodel.SetPosition(glm::vec3(-10.0f, 0.0f, 0.0f));
-        testShader.setMat4("model", loadmodel.getModel());
-        loadmodel.Draw(testShader);
-
-        normalVisualShader.use();
-        normalVisualShader.setMat4("model", loadmodel.getModel());
-        normalVisualShader.setMat4("NormalM", loadmodel.getNormalM());
-        loadmodel.Draw(normalVisualShader);
+        for(auto& object: objects)
+        {
+            object->StartDraw(camera);
+        }
 
         skybox.StartDrawSkybox();
 

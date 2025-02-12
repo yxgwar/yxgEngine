@@ -43,5 +43,6 @@ void TextureCube::Init(std::vector<std::string> &faces)
 
 void TextureCube::bind()
 {
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, ID);
 }

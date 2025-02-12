@@ -10,8 +10,8 @@ class Object
 public:
     Object(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
     virtual ~Object() = default;
-    void Draw();
 protected:
+    void Draw();
     VertexArray m_vao;
     VertexBuffer m_vbo;
     IndexBuffer m_ebo;
