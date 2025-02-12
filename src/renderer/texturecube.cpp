@@ -1,7 +1,17 @@
 #include "texturecube.h"
 #include "stb_image.h"
 
-TextureCube::TextureCube(std::vector<std::string> faces)
+TextureCube::TextureCube(std::vector<std::string>& faces)
+{
+    Init(faces);
+}
+
+TextureCube::~TextureCube()
+{
+    glDeleteTextures(1, &ID);
+}
+
+void TextureCube::Init(std::vector<std::string> &faces)
 {
     glGenTextures(1, &ID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, ID);
@@ -29,11 +39,6 @@ TextureCube::TextureCube(std::vector<std::string> faces)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-}
-
-TextureCube::~TextureCube()
-{
-    glDeleteTextures(1, &ID);
 }
 
 void TextureCube::bind()

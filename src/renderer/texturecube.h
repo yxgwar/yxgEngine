@@ -7,8 +7,11 @@
 class TextureCube
 {
 public:
-    TextureCube(std::vector<std::string> faces);
+    TextureCube() = default;
+    TextureCube(std::vector<std::string>& faces);
     ~TextureCube();
+
+    void Init(std::vector<std::string>& faces);
 
     void bind();
 

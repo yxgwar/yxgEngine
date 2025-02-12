@@ -4,13 +4,15 @@
 #include "window.h"
 #include "renderer/camera.h"
 #include "object/model.h"
-#include "renderer/framebuffer.h"
-#include "renderer/texturecube.h"
 #include "renderer/uniformbuffer.h"
+#include "renderer/renderer.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
+
+#include "custom/FrameBufferObject.h"
+#include "custom/SkyboxObject.h"
 
 int main()
 {
@@ -26,54 +28,18 @@ int main()
     float deltaTime = 0.0f;
     float lastTime = 0.0f;
 
-    glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+    Renderer::Init(ScreenWidth, ScreenHeight);
 
-    glViewport(0, 0, ScreenWidth, ScreenHeight);
-
-    glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_STENCIL_TEST);
-    // glStencilFunc(GL_EQUAL, 1, 0xFF);
-    // glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-    glEnable(GL_CULL_FACE);
+    FrameBufferObject fbo(ScreenWidth, ScreenHeight);
+    SkyboxObject skybox;
 
     Shader modelShader("../assets/shaders/model.vs", "../assets/shaders/model.fs");
-    Shader screenShader("../assets/shaders/frameScreen.vs", "../assets/shaders/frameScreen.fs");
-    Shader skyboxShader("../assets/shaders/skybox.vs", "../assets/shaders/skybox.fs");
     Shader reflectShader("../assets/shaders/reflect.vs", "../assets/shaders/reflect.fs");
     Shader refractShader("../assets/shaders/reflect.vs", "../assets/shaders/refract.fs");
     Shader testShader("../assets/shaders/test.vs", "../assets/shaders/test.fs");
     Shader exploreShader("../assets/shaders/explore/explore.vs", "../assets/shaders/explore/explore.fs", "../assets/shaders/explore/explore.gs");
     Shader normalVisualShader("../assets/shaders/normalVisual/normalVisual.vs", "../assets/shaders/normalVisual/normalVisual.fs", "../assets/shaders/normalVisual/normalVisual.gs");
-    // Shader stencilShader("../assets/shaders/stencil.vs", "../assets/shaders/stencil.fs");
     Model loadmodel("../assets/models/backpack/backpack.obj");
-
-    float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-        // positions   // texCoords
-        -1.0f,  1.0f,  0.0f, 1.0f,
-        -1.0f, -1.0f,  0.0f, 0.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
-
-        -1.0f,  1.0f,  0.0f, 1.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
-         1.0f,  1.0f,  1.0f, 1.0f
-    };
-
-    VertexArray screenVAO;
-    VertexBuffer screenVBO(quadVertices, sizeof(quadVertices));
-    std::vector<VertexAttribute> attribute = {
-        {0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0},
-        {1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float))}
-    };
-
-    screenVAO.AddVBO(screenVBO, attribute);
-
-    FrameBuffer FBO;
-    FBO.attachColor(ScreenWidth, ScreenHeight);
-    FBO.attachDepthStencil(ScreenWidth, ScreenHeight);
-
-    screenShader.use();
-    screenShader.setInt("screenTexture", 0);
 
     glm::vec3 pointLightPositions = glm::vec3( 0.7f,  0.2f,  2.0f);
     modelShader.use();
@@ -89,74 +55,6 @@ int main()
     modelShader.setFloat("pointLights.constant", 1.0f);
     modelShader.setFloat("pointLights.linear", 0.09f);
     modelShader.setFloat("pointLights.quadratic", 0.032f);
-
-    std::vector<std::string> faces
-    {
-        "../assets/images/skybox/right.jpg",
-        "../assets/images/skybox/left.jpg",
-        "../assets/images/skybox/top.jpg",
-        "../assets/images/skybox/bottom.jpg",
-        "../assets/images/skybox/front.jpg",
-        "../assets/images/skybox/back.jpg"
-    };
-
-    TextureCube skybox(faces);
-
-    float skyboxVertices[] = {
-        // positions          
-        -1.0f,  1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f,  1.0f,
-        1.0f,  1.0f,  1.0f,
-        1.0f,  1.0f,  1.0f,
-        1.0f,  1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-        1.0f,  1.0f,  1.0f,
-        1.0f,  1.0f,  1.0f,
-        1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-        -1.0f,  1.0f, -1.0f,
-        1.0f,  1.0f, -1.0f,
-        1.0f,  1.0f,  1.0f,
-        1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f, -1.0f,
-
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-        1.0f, -1.0f,  1.0f
-    };
-
-    VertexArray skyVAO;
-    VertexBuffer skyVBO(skyboxVertices, sizeof(skyboxVertices));
-
-    skyboxShader.use();
-    skyboxShader.setInt("skybox", 0);
-
-    attribute = {
-        {0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0}
-    };
-    skyVAO.AddVBO(skyVBO, attribute);
 
     reflectShader.use();
     reflectShader.setInt("skybox", 0);
@@ -178,24 +76,17 @@ int main()
         window.SetTitle(title);
         window.ProcessInput(camera, deltaTime);
 
+        Renderer::RendererStart();
+
         UBO.setData(sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(camera.getView()));
 
-        FBO.bind();
-        // glViewport(0, 0, ScreenWidth, ScreenHeight);
-        glEnable(GL_DEPTH_TEST);
-
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        fbo.StartDrawOnFrameBuffer();
 
         modelShader.use();
         loadmodel.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
         modelShader.setVec3("viewPos", camera.getPosition());
         modelShader.setMat4("model", loadmodel.getModel());
         modelShader.setMat4("NormalM", loadmodel.getNormalM());
-
-        // glStencilFunc(GL_ALWAYS, 1, 0xFF);
-        // glStencilMask(0xFF);
-
         loadmodel.Draw(modelShader);
 
         reflectShader.use();
@@ -228,41 +119,12 @@ int main()
         normalVisualShader.setMat4("NormalM", loadmodel.getNormalM());
         loadmodel.Draw(normalVisualShader);
 
-        glDepthFunc(GL_LEQUAL);
-        skyboxShader.use();
-        skybox.bind();
-        skyVAO.Draw();
-        glDepthFunc(GL_LESS);
+        skybox.StartDrawSkybox();
 
-        FBO.unbind();
-        // glViewport(offsetX, offsetY, viewportWidth, viewportHeight);
-        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glDisable(GL_DEPTH_TEST);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
-        glClear(GL_COLOR_BUFFER_BIT);
-        screenShader.use();
-        FBO.bindTexture();
-        screenVAO.Draw();
-        // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-        // glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        // glStencilMask(0x00);
-        // glDisable(GL_DEPTH_TEST);
-
-        // stencilShader.use();
-        // stencilShader.setMat4("projection", camera.getProjection());
-        // stencilShader.setMat4("view", camera.getView());
-        // stencilShader.setMat4("model", loadmodel.getModel());
-        // loadmodel.Draw(stencilShader);
-
-        // glStencilMask(0xFF);
-        // glStencilFunc(GL_ALWAYS, 0, 0xFF);
-        // glEnable(GL_DEPTH_TEST);
+        fbo.StartDrawFrameBuffer();
 
         window.OnUpdate();
     }
-
-    glfwTerminate();
     return 0;
 }
 

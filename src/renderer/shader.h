@@ -12,9 +12,12 @@
 class Shader
 {
 public:
+    Shader() = default;
     Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
     ~Shader();
     void use();
+
+    // void Init(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
 
     inline unsigned int getID() {return ID;}
 

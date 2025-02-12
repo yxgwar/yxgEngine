@@ -5,8 +5,11 @@
 class IndexBuffer
 {
 public:
+    IndexBuffer() = default;
     IndexBuffer(unsigned int* indices, size_t size);
     ~IndexBuffer();
+
+    void Init(unsigned int* indices, size_t size);
 
     void bind();
     void unbind();
