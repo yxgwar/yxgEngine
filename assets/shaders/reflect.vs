@@ -12,11 +12,11 @@ layout (std140, binding = 0) uniform Camera
 };
 
 uniform mat4 model;
-uniform mat4 NormalM;
+uniform mat3 NormalM;
 
 void main()
 {
-    Normal = mat3(NormalM) * aNormal;
+    Normal = NormalM * aNormal;
     Position = vec3(model * vec4(aPos, 1.0));
     gl_Position = projection * view * model * vec4(aPos, 1.0);
 }

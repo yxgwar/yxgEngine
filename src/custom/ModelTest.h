@@ -11,7 +11,13 @@ public:
     virtual ~ModelTest() = default;
 
     void StartDraw(Camera& camera);
+
+    void SetPosition(glm::mat4 model);
+    inline glm::mat4 GetModelMatrix() {return m_modelM;}
+    inline glm::mat3 GetNormalMatrix() {return m_NormalM;}
 protected:
-    virtual void OtherProcess() = 0;
+    virtual void PreProcess() = 0;
     std::shared_ptr<Model> m_model;
+    glm::mat4 m_modelM;
+    glm::mat3 m_NormalM;
 };

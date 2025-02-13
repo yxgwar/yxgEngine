@@ -7,10 +7,10 @@ out VS_OUT {
 } vs_out;
 
 uniform mat4 model;
-uniform mat4 NormalM;
+uniform mat3 NormalM;
 
 void main()
 {
-    vs_out.normal = mat3(NormalM) * aNormal;
+    vs_out.normal = NormalM * aNormal;
     gl_Position = model * vec4(aPos, 1.0); 
 }

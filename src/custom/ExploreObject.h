@@ -9,5 +9,5 @@ public:
     ExploreObject(std::shared_ptr<Model> model);
     ~ExploreObject() = default;
 private:
-    void OtherProcess() override;
+    void PreProcess() override;
 };

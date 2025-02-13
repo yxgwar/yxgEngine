@@ -11,12 +11,12 @@ out vec2 TexCoords;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform mat4 NormalM;
+uniform mat3 NormalM;
 
 void main()
 {
    gl_Position = projection * view * model * vec4(aPos, 1.0);
    FragPos = vec3(model * vec4(aPos, 1.0));
-   Normal = normalize(mat3(NormalM) * aNormal);
+   Normal = normalize(NormalM * aNormal);
    TexCoords = aTexCoords;
 }

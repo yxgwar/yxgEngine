@@ -8,5 +8,5 @@ public:
     NormalVisualObject(std::shared_ptr<Model> model);
     ~NormalVisualObject() = default;
 private:
-    void OtherProcess() override;
+    void PreProcess() override;
 };

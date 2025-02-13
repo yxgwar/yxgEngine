@@ -18,9 +18,11 @@ BlinnPhongObject::BlinnPhongObject(std::shared_ptr<Model> model)
     m_shader.setFloat("pointLights.constant", 1.0f);
     m_shader.setFloat("pointLights.linear", 0.09f);
     m_shader.setFloat("pointLights.quadratic", 0.032f);
+
+    SetPosition(glm::mat4(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f))));
 }
 
-void BlinnPhongObject::OtherProcess()
+void BlinnPhongObject::PreProcess()
 {
-    m_model->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+
 }

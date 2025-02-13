@@ -8,5 +8,5 @@ public:
     RefractObject(std::shared_ptr<Model> model);
     ~RefractObject() = default;
 private:
-    void OtherProcess() override;
+    void PreProcess() override;
 };

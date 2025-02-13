@@ -8,5 +8,5 @@ public:
     TestObject(std::shared_ptr<Model> model);
     ~TestObject() = default;
 private:
-    void OtherProcess() override;
+    void PreProcess() override;
 };

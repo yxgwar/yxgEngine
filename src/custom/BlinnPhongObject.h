@@ -8,5 +8,5 @@ public:
     BlinnPhongObject(std::shared_ptr<Model> model);
     ~BlinnPhongObject() = default;
 private:
-    void OtherProcess() override;
+    void PreProcess() override;
 };

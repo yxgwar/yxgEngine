@@ -27,6 +27,7 @@ public:
     void setVec2f(const std::string &name, float x, float y) const;
     void setVec3(const std::string &name, const glm::vec3 &value) const;
     void setVec3(const std::string &name, float x, float y, float z) const;
+    void setMat3(const std::string &name, glm::mat3 mat) const;
     void setMat4(const std::string &name, glm::mat4 mat) const;
     
     bool reload();

@@ -3,10 +3,6 @@
 Model::Model(std::string&& path)
 {
     loadModel(path);
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-    NormalM = glm::transpose(glm::inverse(model));
 }
 
 void Model::Draw(Shader &shader)
@@ -14,13 +10,6 @@ void Model::Draw(Shader &shader)
     shader.use();
     for(auto& mesh: m_meshes)
         mesh->Draw(shader);
-}
-
-void Model::SetPosition(glm::vec3 pos)
-{
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, pos);
-    NormalM = glm::transpose(glm::inverse(model));
 }
 
 void Model::loadModel(std::string &path)
