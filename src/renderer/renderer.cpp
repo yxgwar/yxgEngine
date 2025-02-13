@@ -7,12 +7,38 @@ void Renderer::Init(int width, int height)
     glEnable(GL_DEPTH_TEST);
 
     glEnable(GL_CULL_FACE);
+    m_depthMap = std::make_unique<FrameBuffer>();
+    m_fbo = std::make_unique<FrameBufferObject>(width, height);
+    m_depthMap->attachDepth(1024, 1024);
 }
 
-void Renderer::RendererStart()
+void Renderer::SetViewportSize(int width, int height)
 {
+    glViewport(0, 0, width, height);
+}
+
+void Renderer::StartDrawDepthMap()
+{
+    glViewport(0, 0, m_depthMap->GetWidth(), m_depthMap->GetHeight());
+    m_depthMap->bind();
+    glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+void Renderer::EndDrawDepthMap()
+{
+    m_depthMap->unbind();
+}
+
+void Renderer::StartRender()
+{
+    m_fbo->StartDrawOnFrameBuffer();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+}
+
+void Renderer::EndRender()
+{
+    m_fbo->StartDrawFrameBuffer();
 }
 
 void Renderer::EnableStencil()

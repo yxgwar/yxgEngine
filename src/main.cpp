@@ -7,11 +7,6 @@
 #include "renderer/uniformbuffer.h"
 #include "renderer/renderer.h"
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
-
-#include "custom/FrameBufferObject.h"
 #include "custom/SkyboxObject.h"
 #include "custom/BlinnPhongObject.h"
 #include "custom/ReflectObject.h"
@@ -35,8 +30,6 @@ int main()
     float lastTime = 0.0f;
 
     Renderer::Init(ScreenWidth, ScreenHeight);
-
-    FrameBufferObject fbo(ScreenWidth, ScreenHeight);
     SkyboxObject skybox;
 
     std::shared_ptr<Model> model = std::make_shared<Model>("../assets/models/backpack/backpack.obj");
@@ -65,17 +58,20 @@ int main()
 
         UBO.setData(sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(camera.getView()));
 
-        fbo.StartDrawOnFrameBuffer();
-        Renderer::RendererStart();
+        // Renderer::StartDrawDepthMap();
+        // for(auto& object: objects)
+        // {
+        //     object->StartDraw(camera);
+        // }
+        // Renderer::EndDrawDepthMap();
 
+        Renderer::StartRender();
         for(auto& object: objects)
         {
             object->StartDraw(camera);
         }
-
         skybox.StartDrawSkybox();
-
-        fbo.StartDrawFrameBuffer();
+        Renderer::EndRender();
 
         window.OnUpdate();
     }

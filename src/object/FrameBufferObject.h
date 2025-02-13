@@ -13,4 +13,5 @@ public:
     void StartDrawFrameBuffer();
 private:
     FrameBuffer m_fbo;
+    int m_width, m_height;
 };

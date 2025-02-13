@@ -12,13 +12,18 @@ public:
 
     void attachColor(int width, int height);
     void attachDepthStencil(int width, int height);
+    void attachDepth(int width, int height);
 
     void bindTexture();
 
     void bind();
     void unbind();
+
+    inline int GetWidth() {return m_width;}
+    inline int GetHeight() {return m_height;}
 private:
     unsigned int ID;
     std::vector<unsigned int> m_texColorBuffers;
     unsigned int m_rbo = 0;
+    int m_width, m_height;
 };

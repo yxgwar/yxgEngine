@@ -1,13 +1,13 @@
 #include "FrameBufferObject.h"
 
 FrameBufferObject::FrameBufferObject(int width, int height)
-    :Object("../assets/shaders/frameScreen.vs", "../assets/shaders/frameScreen.fs")
+    :Object("../assets/shaders/frameScreen.vs", "../assets/shaders/frameScreen.fs"), m_width(width), m_height(height)
 {
-    m_fbo.attachColor(width, height);
-    m_fbo.attachDepthStencil(width, height);
-
     m_shader.use();
     m_shader.setInt("screenTexture", 0);
+
+    m_fbo.attachColor(width, height);
+    m_fbo.attachDepthStencil(width, height);
 
     float vertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
         // positions   // texCoords
@@ -30,6 +30,7 @@ FrameBufferObject::FrameBufferObject(int width, int height)
 
 void FrameBufferObject::StartDrawOnFrameBuffer()
 {
+    glViewport(0, 0, m_width, m_height);
     m_fbo.bind();
 }
 

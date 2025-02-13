@@ -14,6 +14,8 @@ FrameBuffer::~FrameBuffer()
 
 void FrameBuffer::attachColor(int width, int height)
 {
+    m_width = width;
+    m_height = height;
     bind();
     unsigned int texColorBuffer;
     glGenTextures(1, &texColorBuffer);
@@ -34,9 +36,11 @@ void FrameBuffer::attachColor(int width, int height)
 
 void FrameBuffer::attachDepthStencil(int width, int height)
 {
+    m_width = width;
+    m_height = height;
     bind();
     glGenRenderbuffers(1, &m_rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, m_rbo); 
+    glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);  
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
@@ -44,6 +48,27 @@ void FrameBuffer::attachDepthStencil(int width, int height)
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    unbind();
+}
+
+void FrameBuffer::attachDepth(int width, int height)
+{
+    m_width = width;
+    m_height = height;
+    bind();
+    unsigned int depthMap;
+    glGenTextures(1, &depthMap);
+    m_texColorBuffers.emplace_back(depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
     unbind();
 }
 
