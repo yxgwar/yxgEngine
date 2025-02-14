@@ -7,12 +7,12 @@
 #include "renderer/uniformbuffer.h"
 #include "renderer/renderer.h"
 
-#include "custom/BlinnPhongObject.h"
-#include "custom/ReflectObject.h"
-#include "custom/RefractObject.h"
-#include "custom/ExploreObject.h"
-#include "custom/TestObject.h"
-#include "custom/NormalVisualObject.h"
+#include "custom/BlinnPhong.h"
+#include "custom/Reflect.h"
+#include "custom/Refract.h"
+#include "custom/Explore.h"
+#include "custom/Test.h"
+#include "custom/NormalVisual.h"
 
 int main()
 {
@@ -44,13 +44,13 @@ int main()
 
     std::shared_ptr<Model> model = std::make_shared<Model>("../assets/models/backpack/backpack.obj");
 
-    std::vector<std::unique_ptr<ModelTest>> objects;
-    objects.emplace_back(std::make_unique<BlinnPhongObject>(model));
-    objects.emplace_back(std::make_unique<ReflectObject>(model));
-    objects.emplace_back(std::make_unique<RefractObject>(model));
-    objects.emplace_back(std::make_unique<ExploreObject>(model));
-    objects.emplace_back(std::make_unique<TestObject>(model));
-    objects.emplace_back(std::make_unique<NormalVisualObject>(model));
+    std::vector<std::unique_ptr<ModelTest>> models;
+    models.emplace_back(std::make_unique<BlinnPhong>(model));
+    models.emplace_back(std::make_unique<Reflect>(model));
+    models.emplace_back(std::make_unique<Refract>(model));
+    models.emplace_back(std::make_unique<Explore>(model));
+    models.emplace_back(std::make_unique<Test>(model));
+    models.emplace_back(std::make_unique<NormalVisual>(model));
 
     UniformBuffer UBO(2 * sizeof(glm::mat4));
     UBO.bind(0, 2 * sizeof(glm::mat4));
@@ -76,9 +76,9 @@ int main()
         // Renderer::EndDrawDepthMap();
 
         Renderer::StartRender();
-        for(auto& object: objects)
+        for(auto& m: models)
         {
-            object->StartDraw(camera);
+            m->StartDraw(camera);
         }
         Renderer::DrawSkybox();
         Renderer::EndRender();
