@@ -7,7 +7,6 @@
 #include "renderer/uniformbuffer.h"
 #include "renderer/renderer.h"
 
-#include "custom/SkyboxObject.h"
 #include "custom/BlinnPhongObject.h"
 #include "custom/ReflectObject.h"
 #include "custom/RefractObject.h"
@@ -30,7 +29,18 @@ int main()
     float lastTime = 0.0f;
 
     Renderer::Init(ScreenWidth, ScreenHeight);
-    SkyboxObject skybox;
+    RenderQuad::Init();
+    RenderCube::Init();
+    std::vector<std::string> faces
+    {
+        "../assets/images/skybox/right.jpg",
+        "../assets/images/skybox/left.jpg",
+        "../assets/images/skybox/top.jpg",
+        "../assets/images/skybox/bottom.jpg",
+        "../assets/images/skybox/front.jpg",
+        "../assets/images/skybox/back.jpg"
+    };
+    Renderer::InitSkybox(faces);
 
     std::shared_ptr<Model> model = std::make_shared<Model>("../assets/models/backpack/backpack.obj");
 
@@ -61,7 +71,7 @@ int main()
         // Renderer::StartDrawDepthMap();
         // for(auto& object: objects)
         // {
-        //     object->StartDraw(camera);
+        //     object->StartDrawwithTempShader(camera, simpleDepthShader);
         // }
         // Renderer::EndDrawDepthMap();
 
@@ -70,7 +80,7 @@ int main()
         {
             object->StartDraw(camera);
         }
-        skybox.StartDrawSkybox();
+        Renderer::DrawSkybox();
         Renderer::EndRender();
 
         window.OnUpdate();

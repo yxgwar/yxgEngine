@@ -11,6 +11,7 @@ public:
     virtual ~ModelTest() = default;
 
     void StartDraw(Camera& camera);
+    void StartDrawwithTempShader(Camera& camera, Shader& shader);
 
     void SetPosition(glm::mat4 model);
     inline glm::mat4 GetModelMatrix() {return m_modelM;}

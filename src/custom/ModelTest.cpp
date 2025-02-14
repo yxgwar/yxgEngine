@@ -16,6 +16,16 @@ void ModelTest::StartDraw(Camera &camera)
     m_model->Draw(m_shader);
 }
 
+void ModelTest::StartDrawwithTempShader(Camera &camera, Shader &shader)
+{
+    shader.use();
+    PreProcess();
+    m_shader.setVec3("viewPos", camera.getPosition());
+    m_shader.setMat4("model", GetModelMatrix());
+    m_shader.setMat3("NormalM", GetNormalMatrix());
+    m_model->Draw(shader);
+}
+
 void ModelTest::SetPosition(glm::mat4 model)
 {
     m_modelM = model;
