@@ -17,11 +17,14 @@ void Renderer::Init(int width, int height)
 
     //screen
     m_screen = std::make_unique<FrameBuffer>();
-    m_screen->attachColor(width, height);
-    m_screen->attachDepthStencil(width, height);
-    m_screenShader = std::make_shared<Shader>("../assets/shaders/frameScreen.vs", "../assets/shaders/frameScreen.fs");
+    // m_screen->attachColor(width, height);
+    // m_screen->attachDepthStencil(width, height);
+    m_screen->attachMultiple(width, height);
+    m_screenShader = std::make_shared<Shader>("../assets/shaders/Screen/frameScreen.vs", "../assets/shaders/Screen/frameScreen.fs");
     m_screenShader->use();
     m_screenShader->setInt("screenTexture", 0);
+    m_screenShader->setInt("samples", 4);
+    m_screenShader->setVec2("textureSize", width, height);
 }
 
 void Renderer::SetViewportSize(int width, int height)

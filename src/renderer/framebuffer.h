@@ -13,6 +13,7 @@ public:
     void attachColor(int width, int height);
     void attachDepthStencil(int width, int height);
     void attachDepth(int width, int height);
+    void attachMultiple(int width, int height);
 
     void bindTexture();
 
