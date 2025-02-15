@@ -13,7 +13,7 @@ void Renderer::Init(int width, int height)
     
     //depthMap
     m_depthMap = std::make_unique<FrameBuffer>();
-    m_depthMap->attachDepth(1024, 1024);
+    m_depthMap->attachDepth(2048, 2048);
 
     //screen
     m_screen = std::make_unique<FrameBuffer>();

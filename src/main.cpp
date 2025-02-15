@@ -23,23 +23,27 @@ void renderScene(Shader& shader)
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::scale(model, glm::vec3(25.0f, 25.0f, 1.0f));
     shader.setMat4("model", model);
+    shader.setMat3("NormalM", glm::transpose(glm::inverse(glm::mat3(model))));
     RenderQuad::DrawwithShader(shader);
     // cubes
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0f));
     model = glm::scale(model, glm::vec3(0.5f));
     shader.setMat4("model", model);
+    shader.setMat3("NormalM", glm::transpose(glm::inverse(glm::mat3(model))));
     RenderCube::DrawwithShader(shader);
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0f));
     model = glm::scale(model, glm::vec3(0.5f));
     shader.setMat4("model", model);
+    shader.setMat3("NormalM", glm::transpose(glm::inverse(glm::mat3(model))));
     RenderCube::DrawwithShader(shader);
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0f));
     model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0f, 0.0f, 1.0f)));
     model = glm::scale(model, glm::vec3(0.25f));
     shader.setMat4("model", model);
+    shader.setMat3("NormalM", glm::transpose(glm::inverse(glm::mat3(model))));
     RenderCube::DrawwithShader(shader);
 }
 
@@ -90,6 +94,11 @@ int main()
     debugShader.use();
     debugShader.setInt("depthMap", 0);
 
+    Shader shadowMapShader("../assets/shaders/shadow/shadow.vs", "../assets/shaders/shadow/shadow.fs");
+    shadowMapShader.use();
+    shadowMapShader.setInt("shadowMap", 0);
+    shadowMapShader.setInt("diffuseTexture", 1);
+
     Shader testShader("../assets/shaders/test.vs", "../assets/shaders/test.fs");
     testShader.use();
     testShader.setInt("texture_diffuse1", 0);
@@ -135,12 +144,18 @@ int main()
         //     // m->StartDraw(camera);
         //     m->StartDrawwithShader(camera, debugShader);
         // }
-        
         // Renderer::DrawSkybox();
-        debugShader.use();
-        debugShader.setFloat("near_plane", near_plane);
-        debugShader.setFloat("far_plane", far_plane);
-        RenderQuad::DrawwithShader(debugShader);
+
+        shadowMapShader.use();
+        shadowMapShader.setVec3("viewPos", camera.getPosition());
+        shadowMapShader.setVec3("lightPos", lightPos);
+        shadowMapShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+        wood.bind(1);
+        renderScene(shadowMapShader);
+        // debugShader.use();
+        // debugShader.setFloat("near_plane", near_plane);
+        // debugShader.setFloat("far_plane", far_plane);
+        // RenderQuad::DrawwithShader(debugShader);
         Renderer::EndRender();
 
         window.OnUpdate();
