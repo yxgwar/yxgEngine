@@ -15,24 +15,68 @@ uniform vec3 lightPos;
 uniform vec3 viewPos;
 
 #define EPS 1e-3
+#define PI 3.141592653589793
+#define PI2 6.283185307179586
+#define NUM_SAMPLES 50
+#define NUM_RINGS 10
 
-float ShadowCalculation(vec4 fragPosLightSpace, float bias)
+highp float rand_1to1(highp float x )
+{ 
+  // -1 -1
+  return fract(sin(x)*10000.0);
+}
+
+highp float rand_2to1(vec2 uv )
+{ 
+  // 0 - 1
+	const highp float a = 12.9898, b = 78.233, c = 43758.5453;
+	highp float dt = dot(uv.xy, vec2(a, b)), sn = mod(dt, PI);
+	return fract(sin(sn) * c);
+}
+
+vec2 poissonDisk[NUM_SAMPLES];
+
+void poissonDiskSamples( const in vec2 randomSeed )
 {
-    // perform perspective divide
-    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // transform to [0,1] range
-    projCoords = projCoords * 0.5 + 0.5;
-    if(projCoords.z > 1.0)
-        return 1.0;
+    float ANGLE_STEP = PI2 * float(NUM_RINGS) / float(NUM_SAMPLES);
+    float INV_NUM_SAMPLES = 1.0 / float(NUM_SAMPLES);
+
+    float angle = rand_2to1(randomSeed) * PI2;
+    float radius = INV_NUM_SAMPLES;
+    float radiusStep = radius;
+
+    for( int i = 0; i < NUM_SAMPLES; i ++ ) {
+        poissonDisk[i] = vec2(cos(angle), sin(angle)) * pow(radius, 0.75);
+        radius += radiusStep;
+        angle += ANGLE_STEP;
+    }
+}
+
+float ShadowCalculation(vec3 projCoords, float bias)
+{
     // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
     float closestDepth = texture(shadowMap, projCoords.xy).r; 
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
     // check whether current frag pos is in shadow
     
-    float shadow = currentDepth - bias > closestDepth + EPS  ? 0.0 : 1.0;
+    float visibility = currentDepth - bias > closestDepth + EPS  ? 0.0 : 1.0;
 
-    return shadow;
+    return visibility;
+}
+
+float PCF(vec3 projCoords, float bias)
+{
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    poissonDiskSamples(projCoords.xy);
+    float visibility = 0.0;
+    for(int i = 0; i < NUM_SAMPLES; i++)
+    {
+        float depth = texture(shadowMap, projCoords.xy + poissonDisk[i] * texelSize).r;
+        if(projCoords.z - bias < depth + EPS)
+        visibility++;
+    }
+    return visibility / float(NUM_SAMPLES);
 }
 
 void main()
@@ -51,10 +95,21 @@ void main()
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
     vec3 specular = spec * lightColor;
+
     // calculate shadow
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    float shadow = ShadowCalculation(fs_in.FragPosLightSpace, bias);                      
-    vec3 lighting = (ambient + shadow * (diffuse + specular)) * color;    
+    // perform perspective divide
+    vec3 projCoords = fs_in.FragPosLightSpace.xyz / fs_in.FragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    float visibility = 0.0;
+    if(projCoords.z > 1.0)
+        visibility = 1.0;
+    else
+        // visibility = ShadowCalculation(projCoords, bias);
+        visibility = PCF(projCoords, bias);
+        // visibility = PCSS(projCoords, bias);
+    vec3 lighting = (ambient + visibility * (diffuse + specular)) * color;    
     
     FragColor = vec4(lighting, 1.0);
 }
