@@ -13,6 +13,7 @@
 #include "custom/Explore.h"
 #include "custom/Test.h"
 #include "custom/NormalVisual.h"
+#include "custom/EmptyModel.h"
 
 void renderScene(Shader& shader)
 {
@@ -26,25 +27,25 @@ void renderScene(Shader& shader)
     shader.setMat3("NormalM", glm::transpose(glm::inverse(glm::mat3(model))));
     RenderQuad::DrawwithShader(shader);
     // cubes
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0f));
-    model = glm::scale(model, glm::vec3(0.5f));
-    shader.setMat4("model", model);
-    shader.setMat3("NormalM", glm::transpose(glm::inverse(glm::mat3(model))));
-    RenderCube::DrawwithShader(shader);
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0f));
-    model = glm::scale(model, glm::vec3(0.5f));
-    shader.setMat4("model", model);
-    shader.setMat3("NormalM", glm::transpose(glm::inverse(glm::mat3(model))));
-    RenderCube::DrawwithShader(shader);
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0f));
-    model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0f, 0.0f, 1.0f)));
-    model = glm::scale(model, glm::vec3(0.25f));
-    shader.setMat4("model", model);
-    shader.setMat3("NormalM", glm::transpose(glm::inverse(glm::mat3(model))));
-    RenderCube::DrawwithShader(shader);
+    // model = glm::mat4(1.0f);
+    // model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0f));
+    // model = glm::scale(model, glm::vec3(0.5f));
+    // shader.setMat4("model", model);
+    // shader.setMat3("NormalM", glm::transpose(glm::inverse(glm::mat3(model))));
+    // RenderCube::DrawwithShader(shader);
+    // model = glm::mat4(1.0f);
+    // model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0f));
+    // model = glm::scale(model, glm::vec3(0.5f));
+    // shader.setMat4("model", model);
+    // shader.setMat3("NormalM", glm::transpose(glm::inverse(glm::mat3(model))));
+    // RenderCube::DrawwithShader(shader);
+    // model = glm::mat4(1.0f);
+    // model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0f));
+    // model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0f, 0.0f, 1.0f)));
+    // model = glm::scale(model, glm::vec3(0.25f));
+    // shader.setMat4("model", model);
+    // shader.setMat3("NormalM", glm::transpose(glm::inverse(glm::mat3(model))));
+    // RenderCube::DrawwithShader(shader);
 }
 
 int main()
@@ -76,6 +77,11 @@ int main()
     // Renderer::InitSkybox(faces);
 
     // std::shared_ptr<Model> model = std::make_shared<Model>("../assets/models/backpack/backpack.obj");
+    std::shared_ptr<Model> model = std::make_shared<Model>("../assets/models/SkyStrikerAce/raye.pmx");
+    EmptyModel raye(model);
+    raye.SetPosition(glm::vec3(0.0f, -0.5f, 0.0f));
+    raye.SetRotation(-90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    raye.SetScale(glm::vec3(0.2f));
 
     // std::vector<std::unique_ptr<ModelTest>> models;
     // models.emplace_back(std::make_unique<BlinnPhong>(model));
@@ -97,7 +103,7 @@ int main()
     Shader shadowMapShader("../assets/shaders/shadow/shadow.vs", "../assets/shaders/shadow/shadow.fs");
     shadowMapShader.use();
     shadowMapShader.setInt("shadowMap", 0);
-    shadowMapShader.setInt("diffuseTexture", 1);
+    shadowMapShader.setInt("texture_diffuse1", 1);
 
     Shader testShader("../assets/shaders/test.vs", "../assets/shaders/test.fs");
     testShader.use();
@@ -136,6 +142,9 @@ int main()
         // }
         wood.bind(0);
         renderScene(simpleDepthShader);
+        // glCullFace(GL_FRONT);
+        raye.StartDrawwithShader(camera, simpleDepthShader);
+        // glCullFace(GL_BACK);
         Renderer::EndDrawDepthMap();
 
         Renderer::StartRender();
@@ -152,6 +161,7 @@ int main()
         shadowMapShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
         wood.bind(1);
         renderScene(shadowMapShader);
+        raye.StartDrawwithShader(camera, shadowMapShader);
         // debugShader.use();
         // debugShader.setFloat("near_plane", near_plane);
         // debugShader.setFloat("far_plane", far_plane);

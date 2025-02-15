@@ -29,8 +29,8 @@ void Mesh::Draw(Shader &shader)
             number = std::to_string(normalNr++); // transfer unsigned int to string
         else if(name == "texture_height")
             number = std::to_string(heightNr++); // transfer unsigned int to string
-        m_textures[i]->bind(i);
-        shader.setInt((name + number).c_str(), i);
+        m_textures[i]->bind(i + 1);
+        shader.setInt((name + number).c_str(), i + 1);
     }
     shader.setFloat("shininess", m_shininess);
     VAO.Draw();

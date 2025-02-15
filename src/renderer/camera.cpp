@@ -1,7 +1,7 @@
 #include "camera.h"
 
 Camera::Camera(float width, float height, float movementSpeed, float mouseSpeed, float fov)
-    :m_width(width), m_height(height), pos(0.0f, 0.0f, 15.0f), front(0.0f, 0.0f, -1.0f), up(0.0f, 1.0f, 0.0f), movementSpeed(movementSpeed), mouseSpeed(mouseSpeed), m_yaw(-90.0f), m_pitch(0.0f), m_fov(fov), Foucs(true)
+    :m_width(width), m_height(height), pos(0.0f, 0.0f, 5.0f), front(0.0f, 0.0f, -1.0f), up(0.0f, 1.0f, 0.0f), movementSpeed(movementSpeed), mouseSpeed(mouseSpeed), m_yaw(-90.0f), m_pitch(0.0f), m_fov(fov), Foucs(true)
 {
     lastX = width / 2.0f;
     lastY = height / 2.0f;

@@ -38,6 +38,26 @@ void ModelTest::SetDefaultShaderFromFile(const char *vertexPath, const char *fra
 
 void ModelTest::SetPosition(glm::vec3 pos)
 {
-    m_modelM = glm::translate(glm::mat4(1.0f), pos);
+    m_position = pos;
+    calcuModel();
+}
+
+void ModelTest::SetRotation(float radius, glm::vec3 direction)
+{
+    m_rotation = glm::angleAxis(glm::radians(radius), glm::normalize(direction));
+    calcuModel();
+}
+
+void ModelTest::SetScale(glm::vec3 scale)
+{
+    m_scale = scale;
+    calcuModel();
+}
+
+void ModelTest::calcuModel()
+{
+    m_modelM = glm::translate(glm::mat4(1.0f), m_position);
+    m_modelM *= glm::mat4_cast(m_rotation);
+    m_modelM = glm::scale(m_modelM, m_scale);
     m_NormalM = glm::transpose(glm::inverse(glm::mat3(m_modelM)));
 }
