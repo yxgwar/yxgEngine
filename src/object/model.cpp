@@ -132,21 +132,16 @@ std::vector<std::shared_ptr<Texture>> Model::loadMaterialTextures(aiMaterial *ma
     {
         aiString str;
         mat->GetTexture(type, i, &str);
-        bool skip = false;
-        for(unsigned int j = 0; j < textures_loaded.size(); j++)
+        auto it = textures_loaded.find(str.C_Str());
+        if(it != textures_loaded.end())
         {
-            if(textures_loaded[j]->getPath() == str.C_Str())
-            {
-                textures.emplace_back(textures_loaded[j]);
-                skip = true; // a texture with the same filepath has already been loaded, continue to next one. (optimization)
-                break;
-            }
+            textures.emplace_back(it->second);
         }
-        if(!skip)
+        else
         {
             std::shared_ptr<Texture> texture = std::make_shared<Texture>(m_directory, str.C_Str(), typeName);
             textures.emplace_back(texture);
-            textures_loaded.emplace_back(texture);
+            textures_loaded[str.C_Str()] = texture;
         }
     }
     return textures;

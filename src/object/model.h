@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "mesh.h"
+#include <unordered_map>
 
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
@@ -18,7 +19,8 @@ public:
 private:
     std::vector<std::unique_ptr<Mesh>> m_meshes;
     std::string m_directory;
-    std::vector<std::shared_ptr<Texture>> textures_loaded;
+    std::unordered_map<std::string, std::shared_ptr<Texture>> textures_loaded;
+    // std::vector<std::shared_ptr<Texture>> textures_loaded;
 
     void loadModel(std::string& path);
     void processNode(aiNode *node, const aiScene *scene);

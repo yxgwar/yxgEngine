@@ -74,14 +74,19 @@ int main()
         "../assets/images/skybox/front.jpg",
         "../assets/images/skybox/back.jpg"
     };
-    // Renderer::InitSkybox(faces);
+    Renderer::InitSkybox(faces);
 
     // std::shared_ptr<Model> model = std::make_shared<Model>("../assets/models/backpack/backpack.obj");
-    std::shared_ptr<Model> model = std::make_shared<Model>("../assets/models/SkyStrikerAce/raye.pmx");
-    EmptyModel raye(model);
+    std::shared_ptr<Model> model1 = std::make_shared<Model>("../assets/models/raye/raye.pmx");
+    EmptyModel raye(model1);
     raye.SetPosition(glm::vec3(0.0f, -0.5f, 0.0f));
     raye.SetRotation(-90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
     raye.SetScale(glm::vec3(0.2f));
+    std::shared_ptr<Model> model2 = std::make_shared<Model>("../assets/models/roze/roze.pmx");
+    EmptyModel roze(model2);
+    roze.SetPosition(glm::vec3(0.0f, -0.5f, 2.0f));
+    roze.SetRotation(-90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    roze.SetScale(glm::vec3(0.2f));
 
     // std::vector<std::unique_ptr<ModelTest>> models;
     // models.emplace_back(std::make_unique<BlinnPhong>(model));
@@ -136,25 +141,14 @@ int main()
         UBO.setData(sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(camera.getView()));
 
         Renderer::StartDrawDepthMap();
-        // for(auto& m: models)
-        // {
-        //     m->StartDrawwithShader(camera, simpleDepthShader);
-        // }
-        wood.bind(0);
         renderScene(simpleDepthShader);
         // glCullFace(GL_FRONT);
         raye.StartDrawwithShader(camera, simpleDepthShader);
+        roze.StartDrawwithShader(camera, simpleDepthShader);
         // glCullFace(GL_BACK);
         Renderer::EndDrawDepthMap();
 
         Renderer::StartRender();
-        // for(auto& m: models)
-        // {
-        //     // m->StartDraw(camera);
-        //     m->StartDrawwithShader(camera, debugShader);
-        // }
-        // Renderer::DrawSkybox();
-
         shadowMapShader.use();
         shadowMapShader.setVec3("viewPos", camera.getPosition());
         shadowMapShader.setVec3("lightPos", lightPos);
@@ -162,6 +156,8 @@ int main()
         wood.bind(1);
         renderScene(shadowMapShader);
         raye.StartDrawwithShader(camera, shadowMapShader);
+        roze.StartDrawwithShader(camera, shadowMapShader);
+        Renderer::DrawSkybox();
         // debugShader.use();
         // debugShader.setFloat("near_plane", near_plane);
         // debugShader.setFloat("far_plane", far_plane);
