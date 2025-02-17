@@ -5,6 +5,8 @@
 #include "RenderQuad.h"
 #include "RenderCube.h"
 #include "texturecube.h"
+#include "uniformbuffer.h"
+#include "camera.h"
 #include <memory>
 
 class Renderer
@@ -31,6 +33,10 @@ public:
     static void DrawOnetoStencil();
     static void UseStencil();
     static void StopUseStencil();
+
+    //UBO
+    static void SetCameraUBO(Camera& camera);
+    static void UpdateCameraUBO(Camera& camera);
 private:
     inline static std::unique_ptr<FrameBuffer> m_depthMap = nullptr;
     inline static std::unique_ptr<FrameBuffer> m_screen = nullptr;
@@ -39,4 +45,6 @@ private:
 
     inline static std::unique_ptr<TextureCube> m_skybox = nullptr;
     inline static std::shared_ptr<Shader> m_skyboxShader = nullptr;
+
+    inline static std::unique_ptr<UniformBuffer> m_ubo = nullptr;
 };

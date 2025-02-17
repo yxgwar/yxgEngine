@@ -6,14 +6,14 @@ void Renderer::Init(int width, int height)
 
     glEnable(GL_DEPTH_TEST);
 
-    glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
 
     m_width = width;
     m_height = height;
     
     //depthMap
     m_depthMap = std::make_unique<FrameBuffer>();
-    m_depthMap->attachDepth(2048, 2048);
+    m_depthMap->attachDepth(4096, 4096);
 
     //screen
     m_screen = std::make_unique<FrameBuffer>();
@@ -140,4 +140,16 @@ void Renderer::StopUseStencil()
     glStencilMask(0xFF);
     glStencilFunc(GL_ALWAYS, 0, 0xFF);
     glEnable(GL_DEPTH_TEST);
+}
+
+void Renderer::SetCameraUBO(Camera &camera)
+{
+    m_ubo = std::make_unique<UniformBuffer>(2 * sizeof(glm::mat4));
+    m_ubo->bind(0, 2 * sizeof(glm::mat4));
+    m_ubo->setData(0, sizeof(glm::mat4), glm::value_ptr(camera.getProjection()));
+}
+
+void Renderer::UpdateCameraUBO(Camera &camera)
+{
+    m_ubo->setData(sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(camera.getView()));
 }

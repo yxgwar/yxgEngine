@@ -14,8 +14,10 @@ public:
     void attachDepthStencil(int width, int height);
     void attachDepth(int width, int height);
     void attachMultiple(int width, int height);
+    void attachDepthCube(int width, int height);
 
     void bindTexture();
+    void bindTexture(int index);
 
     void bind();
     void unbind();

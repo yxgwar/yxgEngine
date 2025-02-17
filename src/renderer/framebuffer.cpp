@@ -71,6 +71,8 @@ void FrameBuffer::attachDepth(int width, int height)
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "Framebuffer not complete!" << std::endl;
     unbind();
 }
 
@@ -103,9 +105,39 @@ void FrameBuffer::attachMultiple(int width, int height)
     unbind();
 }
 
+void FrameBuffer::attachDepthCube(int width, int height)
+{
+    m_width = width;
+    m_height = height;
+    bind();
+    unsigned int depthCubemap;
+    glGenTextures(1, &depthCubemap);
+    m_texColorBuffers.emplace_back(depthCubemap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+    for (GLuint i = 0; i < 6; ++i)
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    // Attach cubemap as depth map FBO's color buffer
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "Framebuffer not complete!" << std::endl;
+    unbind();
+}
+
 void FrameBuffer::bindTexture()
 {
     glBindTextures(0, m_texColorBuffers.size(), m_texColorBuffers.data());
+}
+
+void FrameBuffer::bindTexture(int index)
+{
+    glBindTextures(index, m_texColorBuffers.size(), m_texColorBuffers.data());
 }
 
 void FrameBuffer::bind()

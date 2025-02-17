@@ -122,6 +122,8 @@ std::unique_ptr<Mesh> Model::processMesh(aiMesh *mesh, const aiScene *scene)
     float shininess;
     material->Get(AI_MATKEY_SHININESS, shininess);
 
+    textureCount = std::max(textureCount, int(textures.size()));
+
     return std::make_unique<Mesh>(vertices, indices, textures, shininess);
 }
 

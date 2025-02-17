@@ -16,6 +16,8 @@ public:
     Model(std::string&& path);
 
     void Draw(Shader& shader);
+
+    int textureCount = 0;
 private:
     std::vector<std::unique_ptr<Mesh>> m_meshes;
     std::string m_directory;
