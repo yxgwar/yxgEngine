@@ -80,7 +80,8 @@ int main()
     debugShader.setInt("depthMap", 0);
 
     PointLight light;
-    light.SetPosition(glm::vec3(0.0f, 5.0f, 0.0f));
+    light.SetPosition(glm::vec3(0.0f, 5.0f, 5.0f));
+    light.SetScale(glm::vec3(0.1f));
 
     // Shader shadowMapShader("../assets/shaders/shadow/shadow.vs", "../assets/shaders/shadow/shadow.fs");
     Shader shadowMapShader("../assets/shaders/PointLight/shadow.vs", "../assets/shaders/PointLight/shadow.fs");
@@ -132,6 +133,7 @@ int main()
         Renderer::StartRender();
         shadowMapShader.use();
         shadowMapShader.setVec3("viewPos", camera.getPosition());
+        shadowMapShader.setFloat("time", currentTime);
 
         light.BindDepthMap(4);
 

@@ -3,7 +3,6 @@
 Light::Light(const char *name)
     :Object(name), m_shader("../assets/shaders/White/white.vs", "../assets/shaders/White/white.fs")
 {
-    SetScale(glm::vec3(0.1f));
 }
 
 void Light::Draw()
