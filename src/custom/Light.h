@@ -19,5 +19,5 @@ protected:
     virtual void DrawwithType() = 0;
     FrameBuffer m_depthMap;
     Shader m_shader;
-    int m_width = 2048, m_height = 2048;
+    int m_width = 4096, m_height = 4096;
 };

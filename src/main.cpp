@@ -55,12 +55,12 @@ int main()
     std::shared_ptr<Model> model1 = std::make_shared<Model>("../assets/models/raye/raye.pmx");
     EmptyModel raye(model1);
     raye.SetPosition(glm::vec3(-2.0f, -0.5f, 0.0f));
-    raye.SetRotation(90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    // raye.SetRotation(90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
     raye.SetScale(glm::vec3(0.2f));
     std::shared_ptr<Model> model2 = std::make_shared<Model>("../assets/models/roze/roze.pmx");
     EmptyModel roze(model2);
     roze.SetPosition(glm::vec3(2.0f, -0.5f, 0.0f));
-    roze.SetRotation(-90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    // roze.SetRotation(-90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
     roze.SetScale(glm::vec3(0.2f));
 
     // std::vector<std::unique_ptr<ModelTest>> models;

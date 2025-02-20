@@ -4,7 +4,7 @@ PointLight::PointLight()
     :Light("Point Light"), m_vp(6, glm::mat4(1.0f))
 {
     m_depthMap.attachDepthCube(m_width, m_height);
-    m_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+    m_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 50.0f);
     calcuVP();
 }
 
@@ -22,7 +22,7 @@ void PointLight::StartDrawDepthMap(Shader& shader)
     shader.use();
     for (GLuint i = 0; i < 6; ++i)
         shader.setMat4("shadowMatrices[" + std::to_string(i) + "]", m_vp[i]);
-    shader.setFloat("far_plane", 100.0f);
+    shader.setFloat("far_plane", 50.0f);
     shader.setVec3("lightPos", m_position);
 }
 
