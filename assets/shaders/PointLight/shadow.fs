@@ -131,7 +131,7 @@ float sampleCubeDepth(vec3 fragToLight)
 float findBlockerDepth(vec3 N ,vec3 T, vec3 B, float fragmentDepth)
 {
     // float searchRadius = 0.1 * (fragmentDepth / lightRadius); // 搜索范围随距离增加
-    float searchRadius = 0.2 * lightArea * (fragmentDepth - 0.1) / fragmentDepth;
+    float searchRadius = lightArea * (fragmentDepth - 0.1) / fragmentDepth;
     float totalDepth = 0.0;
     int blockers = 0;
 
@@ -178,7 +178,7 @@ float PCSS(vec3 fragToLight, float fragmentDepth, float bias)
     float avgBlockerDepth = findBlockerDepth(N, T, B, fragmentDepth);
     if (avgBlockerDepth == -1.0) return 1.0; // 无遮挡，完全可见
     // 2. 计算半影大小
-    float penumbra = (fragmentDepth - avgBlockerDepth) / avgBlockerDepth * lightArea;
+    float penumbra = (fragmentDepth - avgBlockerDepth) / avgBlockerDepth * lightArea * 0.1 / fragmentDepth;
     // 3. PCF 滤波
     return PCF(N, T, B, fragmentDepth, penumbra, bias);
 }

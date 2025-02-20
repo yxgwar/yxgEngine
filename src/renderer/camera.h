@@ -30,6 +30,7 @@ public:
     void ScrollControl(float yOffset);
 
     void FreeCamera();
+    inline void ActiveCamera() {Foucs = true;}
 
     bool Foucs;
 private:

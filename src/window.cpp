@@ -89,7 +89,7 @@ void Window::SetCallback(WindowData *windowData)
                     else
                     {
                         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                        camera->Foucs = true;
+                        camera->ActiveCamera();
                     }
                 }
                 break;
@@ -111,18 +111,21 @@ void Window::SetCallback(WindowData *windowData)
 //暂时使用
 void Window::ProcessInput(Camera &camera, float deltaTime)
 {
-    if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.KeyboardControl(CameraKeyCode::FORWARD, deltaTime);
-    if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.KeyboardControl(CameraKeyCode::BACKWARD, deltaTime);
-    if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.KeyboardControl(CameraKeyCode::LEFT, deltaTime);
-    if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.KeyboardControl(CameraKeyCode::RIGHT, deltaTime);
-    if (glfwGetKey(m_window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        camera.KeyboardControl(CameraKeyCode::UP, deltaTime);
-    if (glfwGetKey(m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        camera.KeyboardControl(CameraKeyCode::DOWN, deltaTime);
+    if(camera.Foucs)
+    {
+        if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
+            camera.KeyboardControl(CameraKeyCode::FORWARD, deltaTime);
+        if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
+            camera.KeyboardControl(CameraKeyCode::BACKWARD, deltaTime);
+        if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS)
+            camera.KeyboardControl(CameraKeyCode::LEFT, deltaTime);
+        if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
+            camera.KeyboardControl(CameraKeyCode::RIGHT, deltaTime);
+        if (glfwGetKey(m_window, GLFW_KEY_SPACE) == GLFW_PRESS)
+            camera.KeyboardControl(CameraKeyCode::UP, deltaTime);
+        if (glfwGetKey(m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+            camera.KeyboardControl(CameraKeyCode::DOWN, deltaTime);
+    }
 }
 
 void Window::OnUpdate()
