@@ -11,6 +11,7 @@ uniform sampler2D texture_diffuse1;
 
 uniform samplerCube pointShadowMap;
 uniform vec3 pointLightPos;
+uniform vec3 pointLightColor;
 
 uniform vec3 viewPos;
 // uniform float far_plane;
@@ -184,11 +185,14 @@ float PCSS(vec3 fragToLight, float fragmentDepth, float bias)
 
 vec3 CalcPointLight(vec3 normal, vec3 viewDir, vec3 diffTex, vec3 specTex)
 {
+    vec3 fragToLight = fs_in.FragPos - pointLightPos;
+    float fragmentDepth = length(fragToLight);
+
     vec3 ambient = 0.3 * diffTex;
 
     vec3 lightDir = normalize(pointLightPos - fs_in.FragPos);
     float diff = max(dot(normal, lightDir), 0.0);
-    // float attenuation = 10.0 / pow(length(lightPos - fragPos), 2.0);
+    // float attenuation = 1.0 / (fragmentDepth * fragmentDepth);
     float attenuation = 1.0;
     vec3 diffuse = diff * attenuation * diffTex * 0.5;
 
@@ -197,9 +201,7 @@ vec3 CalcPointLight(vec3 normal, vec3 viewDir, vec3 diffTex, vec3 specTex)
     vec3 specular = spec * attenuation * specTex * 0.3;
 
     // return ambient + (diffuse + specular) * ShadowCalculation();
-
-    vec3 fragToLight = fs_in.FragPos - pointLightPos;
-    float fragmentDepth = length(fragToLight);
+    
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.02);
     // return ambient + (diffuse + specular) * PCSS(fragToLight, fragmentDepth, bias);
     // 计算当前立方体贴图面的正交基
@@ -217,7 +219,7 @@ void main()
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
 
     vec3 result = vec3(0.0);
-    result += CalcPointLight(normal, viewDir, diffTex, vec3(0.3));
+    result += CalcPointLight(normal, viewDir, diffTex, vec3(0.3)) * pointLightColor;
 
     FragColor = vec4(result, 1.0);
     // vec3 fragToLight = fs_in.FragPos - pointLightPos;

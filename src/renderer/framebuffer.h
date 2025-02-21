@@ -15,6 +15,7 @@ public:
     void attachDepth(int width, int height);
     void attachMultiple(int width, int height);
     void attachDepthCube(int width, int height);
+    void attachHDR(int width, int height);
 
     void bindTexture();
     void bindTexture(int index);

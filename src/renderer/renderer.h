@@ -23,6 +23,10 @@ public:
     static void StartRender();
     static void EndRender();
 
+    //hdr
+    static void StartRenderHDR();
+    static void EndRenderHDR(float exposure);
+
     //skybox
     static void InitSkybox(std::vector<std::string>& faces);
     static void DrawSkybox();
@@ -41,6 +45,8 @@ private:
     inline static std::unique_ptr<FrameBuffer> m_depthMap = nullptr;
     inline static std::unique_ptr<FrameBuffer> m_screen = nullptr;
     inline static std::shared_ptr<Shader> m_screenShader = nullptr;
+    inline static std::unique_ptr<FrameBuffer> m_hdr = nullptr;
+    inline static std::shared_ptr<Shader> m_hdrShader = nullptr;
     inline static int m_width = 0, m_height = 0;
 
     inline static std::unique_ptr<TextureCube> m_skybox = nullptr;

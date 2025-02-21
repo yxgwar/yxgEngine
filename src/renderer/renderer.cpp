@@ -25,6 +25,14 @@ void Renderer::Init(int width, int height)
     m_screenShader->setInt("screenTexture", 0);
     m_screenShader->setInt("samples", 4);
     m_screenShader->setVec2("textureSize", width, height);
+
+    //hdr
+    m_hdr = std::make_unique<FrameBuffer>();
+    m_hdr->attachHDR(width, height);
+    m_hdrShader = std::make_shared<Shader>("../assets/shaders/HDR/hdr.vs", "../assets/shaders/HDR/hdr.fs");
+    m_hdrShader->use();
+    m_hdrShader->setInt("hdrBuffer", 0);
+    m_hdrShader->setFloat("exposure", 1.0f);
 }
 
 void Renderer::SetViewportSize(int width, int height)
@@ -82,6 +90,40 @@ void Renderer::EndRender()
         glClear(GL_COLOR_BUFFER_BIT);
 
         RenderQuad::DrawwithShader(*m_screenShader);
+
+        glEnable(GL_DEPTH_TEST);
+    }
+    else
+        std::cout << "screenbuffer Uninit!" << std::endl;
+}
+
+void Renderer::StartRenderHDR()
+{
+    if(m_hdr)
+    {
+        glViewport(0, 0, m_width, m_height);
+        m_hdr->bind();
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    }
+    else
+        std::cout << "screenbuffer Uninit!" << std::endl;
+}
+
+void Renderer::EndRenderHDR(float exposure)
+{
+    if(m_hdr)
+    {
+        m_hdr->unbind();
+        m_hdr->bindTexture();
+
+        glDisable(GL_DEPTH_TEST);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        m_hdrShader->use();
+        m_hdrShader->setFloat("exposure", exposure);
+        RenderQuad::DrawwithShader(*m_hdrShader);
 
         glEnable(GL_DEPTH_TEST);
     }

@@ -96,6 +96,7 @@ int main()
     Shader shadowMapShader("../assets/shaders/PointLight/shadow.vs", "../assets/shaders/PointLight/shadow.fs");
     shadowMapShader.use();
     shadowMapShader.setInt("texture_diffuse1", 0);
+    shadowMapShader.setVec3("pointLightColor", light.GetColor());
     shadowMapShader.setInt("pointShadowMap", 4);
 
     Shader testShader("../assets/shaders/test.vs", "../assets/shaders/test.fs");
@@ -115,6 +116,8 @@ int main()
     // simpleDepthShader.use();
     // simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
+    float exposure = 1.0f;
+
     while(window.OpenWindow())
     {
         float currentTime = window.GetTime();
@@ -131,9 +134,10 @@ int main()
         {
             ImGui::Begin("Hello, world!");
             ImGui::Text("This is some useful text.");
-            ImGui::DragFloat("##X", &lightP.x, 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::DragFloat("##Y", &lightP.y, 0.1f, 0.0f, 0.0f, "%.2f");
-            ImGui::DragFloat("##Z", &lightP.z, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::DragFloat("X", &lightP.x, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::DragFloat("Y", &lightP.y, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::DragFloat("Z", &lightP.z, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::DragFloat("exposure", &exposure, 0.01f, 0.0f, 0.0f, "%.2f");
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
             ImGui::End();
         }
@@ -155,6 +159,7 @@ int main()
         // Renderer::EndDrawDepthMap();
 
         Renderer::StartRender();
+        // Renderer::StartRenderHDR();
         shadowMapShader.use();
         shadowMapShader.setVec3("viewPos", camera.getPosition());
         shadowMapShader.setVec3("pointLightPos", light.GetPosition());
@@ -177,6 +182,7 @@ int main()
         // debugShader.setFloat("far_plane", far_plane);
         // RenderQuad::DrawwithShader(debugShader);
         Renderer::EndRender();
+        // Renderer::EndRenderHDR(exposure);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         window.OnUpdate();
