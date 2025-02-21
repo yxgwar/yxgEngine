@@ -10,6 +10,10 @@
 
 #include "custom/EmptyModel.h"
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 void renderScene(Shader& shader)
 {
     // floor
@@ -33,6 +37,18 @@ int main()
     WindowData windowData;
     windowData.camera = &camera;
     window.SetCallback(&windowData);
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsLight();
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
+    ImGui_ImplOpenGL3_Init("#version 460");
 
     float deltaTime = 0.0f;
     float lastTime = 0.0f;
@@ -63,14 +79,6 @@ int main()
     // roze.SetRotation(-90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
     roze.SetScale(glm::vec3(0.2f));
 
-    // std::vector<std::unique_ptr<ModelTest>> models;
-    // models.emplace_back(std::make_unique<BlinnPhong>(model));
-    // models.emplace_back(std::make_unique<Reflect>(model));
-    // models.emplace_back(std::make_unique<Refract>(model));
-    // models.emplace_back(std::make_unique<Explore>(model));
-    // models.emplace_back(std::make_unique<Test>(model));
-    // models.emplace_back(std::make_unique<NormalVisual>(model));
-
     Renderer::SetCameraUBO(camera);
 
     // Shader simpleDepthShader("../assets/shaders/shadow/simpleDepthShader.vs", "../assets/shaders/shadow/simpleDepthShader.fs");
@@ -80,14 +88,14 @@ int main()
     debugShader.setInt("depthMap", 0);
 
     PointLight light;
-    light.SetPosition(glm::vec3(0.0f, 5.0f, 5.0f));
+    glm::vec3 lightP(0.0f, 5.0f, 5.0f);
+    light.SetPosition(lightP);
     light.SetScale(glm::vec3(0.1f));
 
     // Shader shadowMapShader("../assets/shaders/shadow/shadow.vs", "../assets/shaders/shadow/shadow.fs");
     Shader shadowMapShader("../assets/shaders/PointLight/shadow.vs", "../assets/shaders/PointLight/shadow.fs");
     shadowMapShader.use();
     shadowMapShader.setInt("texture_diffuse1", 0);
-    shadowMapShader.setVec3("pointLightPos", light.GetPosition());
     shadowMapShader.setInt("pointShadowMap", 4);
 
     Shader testShader("../assets/shaders/test.vs", "../assets/shaders/test.fs");
@@ -113,9 +121,25 @@ int main()
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
-        std::string title = "FPS:" + std::to_string(1.0f / deltaTime);
-        window.SetTitle(title);
+        // std::string title = "FPS:" + std::to_string(1.0f / deltaTime);
+        // window.SetTitle(title);
         window.ProcessInput(camera, deltaTime);
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        {
+            ImGui::Begin("Hello, world!");
+            ImGui::Text("This is some useful text.");
+            ImGui::DragFloat("##X", &lightP.x, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::DragFloat("##Y", &lightP.y, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::DragFloat("##Z", &lightP.z, 0.1f, 0.0f, 0.0f, "%.2f");
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::End();
+        }
+        ImGui::Render();
+        
+        light.SetPosition(lightP);
 
         Renderer::UpdateCameraUBO(camera);
 
@@ -133,6 +157,7 @@ int main()
         Renderer::StartRender();
         shadowMapShader.use();
         shadowMapShader.setVec3("viewPos", camera.getPosition());
+        shadowMapShader.setVec3("pointLightPos", light.GetPosition());
         shadowMapShader.setFloat("time", currentTime);
 
         light.BindDepthMap(4);
@@ -153,7 +178,11 @@ int main()
         // RenderQuad::DrawwithShader(debugShader);
         Renderer::EndRender();
 
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         window.OnUpdate();
     }
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     return 0;
 }

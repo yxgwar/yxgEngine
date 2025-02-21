@@ -9,14 +9,21 @@ include_directories(
     "./vendor/glad/include"
     "./vendor/glm"
     "./vendor/assimp/include"
+    "./vendor/imgui"
+    "./vendor/imgui/backends"
     "src"
 )
 
 file(GLOB_RECURSE src ${PROJECT_SOURCE_DIR}/src/*.cpp)
+file(GLOB imgui 
+    ./vendor/imgui/*.cpp
+    ./vendor/imgui/backends/imgui_impl_opengl3.cpp
+    ./vendor/imgui/backends/imgui_impl_glfw.cpp
+)
 
 file(COPY "${CMAKE_SOURCE_DIR}/vendor/assimp/bin/libassimp-5.dll" DESTINATION ./)
 
-add_executable(MyOpengl ${src} ./vendor/glad/src/glad.c)
+add_executable(MyOpengl ${src} ${imgui} ./vendor/glad/src/glad.c)
 
 set( LIBRARIES
     "${CMAKE_SOURCE_DIR}/vendor/glfw/lib-mingw-w64/libglfw3.a"
