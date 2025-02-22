@@ -209,7 +209,7 @@ vec3 CalcPointLight(vec3 normal, vec3 viewDir, vec3 diffTex, vec3 specTex)
     vec3 N = normalize(fragToLight);
     vec3 T = normalize(cross(N, vec3(0.0, 1.0, 0.0)));
     vec3 B = cross(N, T);
-    return ambient + (diffuse + specular) * PCF(N, T, B, fragmentDepth, 0.0005, bias);
+    return ambient + (diffuse + specular) * PCF(N, T, B, fragmentDepth, 0.0005, bias) * pointLightColor;
 }
 
 void main()
@@ -220,11 +220,11 @@ void main()
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
 
     vec3 result = vec3(0.0);
-    result += CalcPointLight(normal, viewDir, diffTex, vec3(0.1)) * pointLightColor;
+    result += CalcPointLight(normal, viewDir, diffTex, vec3(0.1));
 
     FragColor = vec4(result, 1.0);
     float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-    if(brightness > 0.8)
+    if(brightness > 1.0)
         BrightColor = vec4(FragColor.rgb, 1.0);
     // vec3 fragToLight = fs_in.FragPos - pointLightPos;
     // float closestDepth = texture(pointShadowMap, fragToLight).r;
