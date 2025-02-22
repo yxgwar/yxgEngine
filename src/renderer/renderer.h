@@ -41,6 +41,9 @@ public:
     //UBO
     static void SetCameraUBO(Camera& camera);
     static void UpdateCameraUBO(Camera& camera);
+
+    //imgui
+    inline static std::unique_ptr<FrameBuffer> imguiF = nullptr;
 private:
     inline static std::unique_ptr<FrameBuffer> m_depthMap = nullptr;
     inline static std::unique_ptr<FrameBuffer> m_screen = nullptr;

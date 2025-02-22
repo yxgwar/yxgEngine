@@ -43,6 +43,10 @@ void Renderer::Init(int width, int height)
     m_blurShader = std::make_shared<Shader>("../assets/shaders/HDR/blur.vs", "../assets/shaders/HDR/blur.fs");
     m_blurShader->use();
     m_blurShader->setInt("image", 0);
+
+    //imgui
+    imguiF = std::make_unique<FrameBuffer>();
+    imguiF->attachColor(width, height);
 }
 
 void Renderer::SetViewportSize(int width, int height)
@@ -77,6 +81,7 @@ void Renderer::EndDrawDepthMap()
 
 void Renderer::StartRender()
 {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     if(m_screen)
     {
         glViewport(0, 0, m_width, m_height);
@@ -109,6 +114,7 @@ void Renderer::EndRender()
 
 void Renderer::StartRenderHDR()
 {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     if(m_hdr)
     {
         glViewport(0, 0, m_width, m_height);
@@ -146,6 +152,7 @@ void Renderer::EndRenderHDR(float exposure)
             horizontal = !horizontal;
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        imguiF->bind();
 
         // glDisable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -160,6 +167,8 @@ void Renderer::EndRenderHDR(float exposure)
         m_hdrShader->use();
         m_hdrShader->setFloat("exposure", exposure);
         RenderQuad::DrawwithShader(*m_hdrShader);
+
+        imguiF->unbind();
 
         // glEnable(GL_DEPTH_TEST);
     }

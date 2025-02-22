@@ -5,14 +5,10 @@
 #include "renderer/camera.h"
 #include "object/model.h"
 #include "renderer/renderer.h"
+#include "renderer/ImGuiRenderer.h"
 
 #include "custom/PointLight.h"
-
 #include "custom/EmptyModel.h"
-
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 
 void renderScene(Shader& shader)
 {
@@ -38,17 +34,7 @@ int main()
     windowData.camera = &camera;
     window.SetCallback(&windowData);
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsLight();
-    // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
-    ImGui_ImplOpenGL3_Init("#version 460");
+    ImGuiRenderer::Init(window);
 
     float deltaTime = 0.0f;
     float lastTime = 0.0f;
@@ -128,17 +114,21 @@ int main()
         // window.SetTitle(title);
         window.ProcessInput(camera, deltaTime);
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        ImGuiRenderer::Create();
         {
             ImGui::Begin("Hello, world!");
+            ImGuiIO& io = ImGui::GetIO(); (void)io;
             ImGui::Text("This is some useful text.");
             ImGui::DragFloat("X", &lightP.x, 0.1f, 0.0f, 0.0f, "%.2f");
             ImGui::DragFloat("Y", &lightP.y, 0.1f, 0.0f, 0.0f, "%.2f");
             ImGui::DragFloat("Z", &lightP.z, 0.1f, 0.0f, 0.0f, "%.2f");
             ImGui::DragFloat("exposure", &exposure, 0.01f, 0.0f, 0.0f, "%.2f");
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::End();
+        }
+        {
+            ImGui::Begin("screen");
+            ImGui::Image((intptr_t)Renderer::imguiF->GetColorAttachmentID(), ImVec2(ScreenWidth, ScreenHeight), ImVec2(0, 1), ImVec2(1, 0));
             ImGui::End();
         }
         ImGui::Render();
@@ -176,7 +166,7 @@ int main()
 
         light.Draw();
         
-        Renderer::DrawSkybox();
+        // Renderer::DrawSkybox();
         // debugShader.use();
         // debugShader.setFloat("near_plane", near_plane);
         // debugShader.setFloat("far_plane", far_plane);
@@ -184,7 +174,8 @@ int main()
         // Renderer::EndRender();
         Renderer::EndRenderHDR(exposure);
 
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGuiRenderer::Draw();
+
         window.OnUpdate();
     }
     ImGui_ImplOpenGL3_Shutdown();
