@@ -158,8 +158,8 @@ int main()
         // roze.StartDrawwithShader(camera, simpleDepthShader);
         // Renderer::EndDrawDepthMap();
 
-        Renderer::StartRender();
-        // Renderer::StartRenderHDR();
+        // Renderer::StartRender();
+        Renderer::StartRenderHDR();
         shadowMapShader.use();
         shadowMapShader.setVec3("viewPos", camera.getPosition());
         shadowMapShader.setVec3("pointLightPos", light.GetPosition());
@@ -181,8 +181,8 @@ int main()
         // debugShader.setFloat("near_plane", near_plane);
         // debugShader.setFloat("far_plane", far_plane);
         // RenderQuad::DrawwithShader(debugShader);
-        Renderer::EndRender();
-        // Renderer::EndRenderHDR(exposure);
+        // Renderer::EndRender();
+        Renderer::EndRenderHDR(exposure);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         window.OnUpdate();

@@ -16,9 +16,10 @@ public:
     void attachMultiple(int width, int height);
     void attachDepthCube(int width, int height);
     void attachHDR(int width, int height);
+    void attachPingPong(int width, int height);
 
-    void bindTexture();
-    void bindTexture(int index);
+    void bindTexture(int index = 0);
+    void bindSingleTexture(int index);
 
     void bind();
     void unbind();

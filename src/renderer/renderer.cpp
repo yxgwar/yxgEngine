@@ -31,8 +31,18 @@ void Renderer::Init(int width, int height)
     m_hdr->attachHDR(width, height);
     m_hdrShader = std::make_shared<Shader>("../assets/shaders/HDR/hdr.vs", "../assets/shaders/HDR/hdr.fs");
     m_hdrShader->use();
-    m_hdrShader->setInt("hdrBuffer", 0);
+    m_hdrShader->setInt("scene", 0);
+    m_hdrShader->setInt("bloomBlur", 1);
     m_hdrShader->setFloat("exposure", 1.0f);
+
+    //bloom
+    m_blurH = std::make_unique<FrameBuffer>();
+    m_blurH->attachPingPong(width, height);
+    m_blurV = std::make_unique<FrameBuffer>();
+    m_blurV->attachPingPong(width, height);
+    m_blurShader = std::make_shared<Shader>("../assets/shaders/HDR/blur.vs", "../assets/shaders/HDR/blur.fs");
+    m_blurShader->use();
+    m_blurShader->setInt("image", 0);
 }
 
 void Renderer::SetViewportSize(int width, int height)
@@ -115,17 +125,43 @@ void Renderer::EndRenderHDR(float exposure)
     if(m_hdr)
     {
         m_hdr->unbind();
-        m_hdr->bindTexture();
+        m_hdr->bindSingleTexture(1);
 
-        glDisable(GL_DEPTH_TEST);
+        bool horizontal = true;
+        unsigned int amount = 10;
+        m_blurShader->use();
+        for (unsigned int i = 0; i <= amount; i++)
+        {
+            if(horizontal)
+                m_blurH->bind();
+            else
+                m_blurV->bind();
+            m_blurShader->setInt("horizontal", horizontal);
+            RenderQuad::DrawwithShader(*m_blurShader);
+            if(horizontal)
+                m_blurH->bindTexture();
+            else
+                m_blurV->bindTexture();
+            
+            horizontal = !horizontal;
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // glDisable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        m_hdr->bindSingleTexture(0);
+        if(!horizontal)
+            m_blurH->bindTexture(1);
+        else
+            m_blurV->bindTexture(1);
 
         m_hdrShader->use();
         m_hdrShader->setFloat("exposure", exposure);
         RenderQuad::DrawwithShader(*m_hdrShader);
 
-        glEnable(GL_DEPTH_TEST);
+        // glEnable(GL_DEPTH_TEST);
     }
     else
         std::cout << "screenbuffer Uninit!" << std::endl;

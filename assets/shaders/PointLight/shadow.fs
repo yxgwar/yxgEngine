@@ -1,5 +1,6 @@
 #version 460 core
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 in VS_OUT {
     vec3 FragPos;
@@ -219,9 +220,12 @@ void main()
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
 
     vec3 result = vec3(0.0);
-    result += CalcPointLight(normal, viewDir, diffTex, vec3(0.3)) * pointLightColor;
+    result += CalcPointLight(normal, viewDir, diffTex, vec3(0.1)) * pointLightColor;
 
     FragColor = vec4(result, 1.0);
+    float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > 0.8)
+        BrightColor = vec4(FragColor.rgb, 1.0);
     // vec3 fragToLight = fs_in.FragPos - pointLightPos;
     // float closestDepth = texture(pointShadowMap, fragToLight).r;
     // FragColor = vec4(vec3(closestDepth), 1.0);

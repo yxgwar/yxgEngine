@@ -47,6 +47,9 @@ private:
     inline static std::shared_ptr<Shader> m_screenShader = nullptr;
     inline static std::unique_ptr<FrameBuffer> m_hdr = nullptr;
     inline static std::shared_ptr<Shader> m_hdrShader = nullptr;
+    inline static std::unique_ptr<FrameBuffer> m_blurH = nullptr;
+    inline static std::unique_ptr<FrameBuffer> m_blurV = nullptr;
+    inline static std::shared_ptr<Shader> m_blurShader = nullptr;
     inline static int m_width = 0, m_height = 0;
 
     inline static std::unique_ptr<TextureCube> m_skybox = nullptr;
