@@ -1,5 +1,5 @@
 #include "texture.h"
-#include "stb_image.h"
+#include "../stb_image.h"
 
 Texture::Texture(const char *path)
 {

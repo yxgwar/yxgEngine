@@ -114,7 +114,7 @@ int main()
         // window.SetTitle(title);
         window.ProcessInput(camera, deltaTime);
 
-        ImGuiRenderer::Create();
+        ImGuiRenderer::Begin();
         {
             ImGui::Begin("Hello, world!");
             ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -126,60 +126,43 @@ int main()
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
             ImGui::End();
         }
-        {
-            ImGui::Begin("screen");
-            ImGui::Image((intptr_t)Renderer::imguiF->GetColorAttachmentID(), ImVec2(ScreenWidth, ScreenHeight), ImVec2(0, 1), ImVec2(1, 0));
-            ImGui::End();
-        }
-        ImGui::Render();
+        // {
+        //     ImGui::Begin("screen");
+        //     ImGui::Image((intptr_t)Renderer::imguiF->GetColorAttachmentID(), ImVec2(ScreenWidth, ScreenHeight), ImVec2(0, 1), ImVec2(1, 0));
+        //     ImGui::End();
+        // }
+        
         
         light.SetPosition(lightP);
 
         Renderer::UpdateCameraUBO(camera);
 
+        //depthMap
         light.StartDrawDepthMap(depthShader);
         raye.StartDrawwithShader(camera, depthShader);
         roze.StartDrawwithShader(camera, depthShader);
         light.StopDrawDepthMap();
 
-        // Renderer::StartDrawDepthMap();
-        // renderScene(simpleDepthShader);
-        // raye.StartDrawwithShader(camera, simpleDepthShader);
-        // roze.StartDrawwithShader(camera, simpleDepthShader);
-        // Renderer::EndDrawDepthMap();
-
+        //scene
         // Renderer::StartRender();
         Renderer::StartRenderHDR();
         shadowMapShader.use();
         shadowMapShader.setVec3("viewPos", camera.getPosition());
         shadowMapShader.setVec3("pointLightPos", light.GetPosition());
         shadowMapShader.setFloat("time", currentTime);
-
         light.BindDepthMap(4);
-
-        // shadowMapShader.setVec3("lightPos", lightPos);
-        // shadowMapShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
         wood.bind(0);
         renderScene(shadowMapShader);
         raye.StartDrawwithShader(camera, shadowMapShader);
         roze.StartDrawwithShader(camera, shadowMapShader);
-
         light.Draw();
-        
         // Renderer::DrawSkybox();
-        // debugShader.use();
-        // debugShader.setFloat("near_plane", near_plane);
-        // debugShader.setFloat("far_plane", far_plane);
-        // RenderQuad::DrawwithShader(debugShader);
-        // Renderer::EndRender();
-        Renderer::EndRenderHDR(exposure);
+        Renderer::EndRenderHDR(exposure, ImGuiRenderer::imguiF->GetColorAttachmentID());
 
-        ImGuiRenderer::Draw();
+        ImGuiRenderer::End();
 
         window.OnUpdate();
     }
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    ImGuiRenderer::Destroy();
     return 0;
 }

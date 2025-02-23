@@ -24,9 +24,9 @@ public:
     void bind();
     void unbind();
 
-    inline int GetWidth() {return m_width;}
-    inline int GetHeight() {return m_height;}
-    inline unsigned int GetColorAttachmentID() {return m_texColorBuffers[0];}
+    inline int GetWidth() const {return m_width;}
+    inline int GetHeight() const {return m_height;}
+    inline unsigned int GetColorAttachmentID() const {return m_texColorBuffers[0];}
 private:
     unsigned int ID;
     std::vector<unsigned int> m_texColorBuffers;

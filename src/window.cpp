@@ -1,7 +1,7 @@
 #include "window.h"
 
 Window::Window(int width, int height)
-    :m_aspect(float(width) / height)
+    :m_aspect(float(width) / height), m_width(width), m_height(height)
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);

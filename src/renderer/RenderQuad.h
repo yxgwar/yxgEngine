@@ -1,10 +1,10 @@
 #pragma once
 
 #include "glad/glad.h"
-#include "vertexarray.h"
-#include "vertexbuffer.h"
-#include "indexbuffer.h"
-#include "shader.h"
+#include "openGL/vertexarray.h"
+#include "openGL/vertexbuffer.h"
+#include "openGL/indexbuffer.h"
+#include "openGL/shader.h"
 #include <memory>
 
 class RenderQuad

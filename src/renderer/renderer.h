@@ -1,11 +1,10 @@
 #pragma once
 
-#include "glad/glad.h"
-#include "framebuffer.h"
 #include "RenderQuad.h"
 #include "RenderCube.h"
 #include "texturecube.h"
-#include "uniformbuffer.h"
+#include "openGL/framebuffer.h"
+#include "openGL/uniformbuffer.h"
 #include "camera.h"
 #include <memory>
 
@@ -25,7 +24,7 @@ public:
 
     //hdr
     static void StartRenderHDR();
-    static void EndRenderHDR(float exposure);
+    static void EndRenderHDR(float exposure, unsigned int ID);
 
     //skybox
     static void InitSkybox(std::vector<std::string>& faces);
@@ -41,9 +40,6 @@ public:
     //UBO
     static void SetCameraUBO(Camera& camera);
     static void UpdateCameraUBO(Camera& camera);
-
-    //imgui
-    inline static std::unique_ptr<FrameBuffer> imguiF = nullptr;
 private:
     inline static std::unique_ptr<FrameBuffer> m_depthMap = nullptr;
     inline static std::unique_ptr<FrameBuffer> m_screen = nullptr;

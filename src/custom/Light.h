@@ -1,7 +1,5 @@
 #pragma once
 
-#include "renderer/framebuffer.h"
-#include "renderer/shader.h"
 #include "renderer/renderer.h"
 #include "Object.h"
 
