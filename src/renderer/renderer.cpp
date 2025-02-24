@@ -56,7 +56,6 @@ void Renderer::StartDrawDepthMap()
 {
     if(m_depthMap)
     {
-        glViewport(0, 0, m_depthMap->GetWidth(), m_depthMap->GetHeight());
         m_depthMap->bind();
         glClear(GL_DEPTH_BUFFER_BIT);
     }
@@ -80,7 +79,6 @@ void Renderer::StartRender()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     if(m_screen)
     {
-        glViewport(0, 0, m_width, m_height);
         m_screen->bind();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -113,7 +111,6 @@ void Renderer::StartRenderHDR()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     if(m_hdr)
     {
-        glViewport(0, 0, m_width, m_height);
         m_hdr->bind();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);

@@ -16,4 +16,5 @@ public:
     //imgui
     inline static std::unique_ptr<FrameBuffer> imguiF = nullptr;
 private:
+    inline static int m_width, m_height;
 };

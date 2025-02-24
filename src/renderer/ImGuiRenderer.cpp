@@ -2,9 +2,11 @@
 
 void ImGuiRenderer::Init(Window &window)
 {
+    m_width = window.GetWidth();
+    m_height = window.GetHeight();
     //imgui
     imguiF = std::make_unique<FrameBuffer>();
-    imguiF->attachColor(window.GetWidth(), window.GetHeight());
+    imguiF->attachColor(m_width, m_height);
     
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -69,7 +71,20 @@ void ImGuiRenderer::Begin()
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
     ImGui::Begin("Viewport");
     ImVec2 size = ImGui::GetContentRegionAvail();
-    ImGui::Image((intptr_t)imguiF->GetColorAttachmentID(), size, ImVec2{0, 1}, ImVec2{1, 0});
+    ImVec2 displaySize = size;
+    float aspectRatio = (float)imguiF->GetWidth() / (float)imguiF->GetHeight();
+
+    // 计算保持宽高比的显示尺寸
+    if (size.x / aspectRatio < size.y)
+        displaySize.y = size.x / aspectRatio;
+    else
+        displaySize.x = size.y * aspectRatio;
+
+    // 居中显示
+    ImGui::SetCursorPosX((size.x - displaySize.x) * 0.5f);
+    ImGui::SetCursorPosY((size.y - displaySize.y) * 0.5f);
+    
+    ImGui::Image((intptr_t)imguiF->GetColorAttachmentID(), displaySize, ImVec2{0, 1}, ImVec2{1, 0});
     ImGui::End();
     ImGui::PopStyleVar();
 }

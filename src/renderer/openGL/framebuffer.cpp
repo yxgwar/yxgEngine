@@ -202,6 +202,7 @@ void FrameBuffer::bindSingleTexture(int index)
 void FrameBuffer::bind()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, ID);
+    glViewport(0, 0, m_width, m_height);
 }
 
 void FrameBuffer::unbind()
