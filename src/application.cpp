@@ -25,8 +25,8 @@ void Application::Run()
 
         m_scene.OnUpdate();
 
-        ImGuiRenderer::Begin();
-        ImGuiRenderer::End();
+        // ImGuiRenderer::Begin();
+        // ImGuiRenderer::End();
 
         m_window.OnUpdate();
     }

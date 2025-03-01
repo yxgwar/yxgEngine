@@ -15,12 +15,6 @@ public:
 
     void OnUpdate();
 private:
-    // 测试用
-    void loadAllShaders();
-    void loadAllTextures();
-    void loadAllMaterials();
-    void loadAllModels();
-private:
     std::unique_ptr<Camera> m_camera;
     PointLight m_light;
     std::vector<Entity*> m_entities;

@@ -27,10 +27,6 @@ void Scene::Init(int width, int height)
     // };
     // Renderer::InitSkybox(faces);
 
-    // loadAllShaders();
-    // loadAllTextures();
-    // loadAllMaterials();
-
     // 加载场景
     Entity* entt = new Entity(id++, "raye");
     auto tc = entt->AddComponent<TransformComponent>();
@@ -49,9 +45,9 @@ void Scene::Init(int width, int height)
     m_entities.emplace_back(entt);
 
     // 主灯光
-    glm::vec3 lightP(0.0f, 5.0f, 5.0f);
-    m_light.SetPosition(lightP);
-    m_light.SetScale(glm::vec3(0.1f));
+    // glm::vec3 lightP(0.0f, 5.0f, 5.0f);
+    // m_light.SetPosition(lightP);
+    // m_light.SetScale(glm::vec3(0.1f));
 }
 
 void Scene::OnUpdate()
@@ -66,38 +62,4 @@ void Scene::OnUpdate()
         }
     }
     Renderer::EndRender();
-}
-
-void Scene::loadAllShaders()
-{
-    std::string shaderPath[][3]{
-        {"default/default.vs", "default/default.fs", ""},
-        {"shadow/shadow.vs", "shadow/shadow.fs", ""}
-    };
-
-    for(auto& s: shaderPath)
-    {
-        Import::LoadShader(s[0], s[1], s[2]);
-    }
-}
-
-void Scene::loadAllTextures()
-{
-    std::string texturePath[]{
-        "images/wood.png"
-    };
-
-    for(auto& s: texturePath)
-    {
-        Import::LoadTexture(s);
-    }
-}
-
-void Scene::loadAllMaterials()
-{
-
-}
-
-void Scene::loadAllModels()
-{
 }
