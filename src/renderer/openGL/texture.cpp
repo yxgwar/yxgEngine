@@ -1,15 +1,15 @@
 #include "texture.h"
 #include "../stb_image.h"
 
-Texture::Texture(const char *path)
+Texture::Texture(const std::string& path)
 {
-    load(path);
+    load(path.c_str());
 }
 
-Texture::Texture(const std::string &directory, const char *path, std::string &type)
+Texture::Texture(const std::string &directory, const std::string& path, std::string &type)
     : m_type(type), m_path(path)
 {
-    std::string filename = std::string(path);
+    std::string filename = path;
     filename = directory + '/' + filename;
     load(filename.c_str());
 }
@@ -24,7 +24,7 @@ void Texture::bind(int index)
     glBindTextureUnit(index, ID);
 }
 
-void Texture::load(const char *path)
+void Texture::load(const char* path)
 {
     glGenTextures(1, &ID);
     glBindTexture(GL_TEXTURE_2D, ID); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object

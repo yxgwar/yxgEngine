@@ -1,7 +1,6 @@
 #include "Shader.h"
 
-Shader::Shader(const char *vertexPath, const char *fragmentPath, const char* geometryPath)
-    :m_vertexPath(vertexPath), m_fragmentPath(fragmentPath)
+Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath, const std::string& geometryPath)
 {
     if(!loadFromFile(vertexPath, fragmentPath, geometryPath))
         throw std::runtime_error("Shader init failed!");
@@ -17,62 +16,47 @@ void Shader::use()
     glUseProgram(ID);
 }
 
-void Shader::setBool(const std::string &name, bool value) const
+void Shader::setBool(const std::string &name, bool value)
 {
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value); 
+    glUniform1i(getUniformLocation(name), (int)value); 
 }
 
-void Shader::setInt(const std::string &name, int value) const
+void Shader::setInt(const std::string &name, int value)
 { 
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), value); 
+    glUniform1i(getUniformLocation(name), value); 
 }
 
-void Shader::setFloat(const std::string &name, float value) const
+void Shader::setFloat(const std::string &name, float value)
 { 
-    glUniform1f(glGetUniformLocation(ID, name.c_str()), value); 
+    glUniform1f(getUniformLocation(name), value); 
 }
 
-void Shader::setVec2(const std::string &name, float x, float y) const
+void Shader::setVec2(const std::string &name, float x, float y)
 {
-    glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y);
+    glUniform2f(getUniformLocation(name), x, y);
 }
 
-void Shader::setVec3(const std::string &name, const glm::vec3 &value) const
+void Shader::setVec3(const std::string &name, const glm::vec3 &value)
 {
-    glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, glm::value_ptr(value));
+    glUniform3fv(getUniformLocation(name), 1, glm::value_ptr(value));
 }
 
-void Shader::setVec3(const std::string &name, float x, float y, float z) const
+void Shader::setVec3(const std::string &name, float x, float y, float z)
 {
-    glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z); 
+    glUniform3f(getUniformLocation(name), x, y, z); 
 }
 
-void Shader::setMat3(const std::string &name, glm::mat3 mat) const
+void Shader::setMat3(const std::string &name, glm::mat3 mat)
 {
-    glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+    glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
-void Shader::setMat4(const std::string &name, glm::mat4 mat) const
+void Shader::setMat4(const std::string &name, glm::mat4 mat)
 {
-    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+    glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
-bool Shader::reload()
-{
-    unsigned int oldID = ID;
-    if(loadFromFile(m_vertexPath.c_str(), m_fragmentPath.c_str()))
-    {
-        glDeleteProgram(oldID);
-        return true;
-    }
-    else
-    {
-        ID = oldID;
-        return false;
-    }
-}
-
-bool Shader::loadFromFile(const char *vertexPath, const char *fragmentPath, const char* geometryPath)
+bool Shader::loadFromFile(const std::string& vertexPath, const std::string& fragmentPath, const std::string& geometryPath)
 {
     std::string vertexCode;
     std::string fragmentCode;
@@ -99,7 +83,7 @@ bool Shader::loadFromFile(const char *vertexPath, const char *fragmentPath, cons
         vertexCode = vShaderStream.str();
         fragmentCode = fShaderStream.str();
 
-        if(geometryPath)
+        if(!geometryPath.empty())
         {
             gShaderFile.open(geometryPath);
             std::stringstream gShaderStream;
@@ -130,7 +114,7 @@ bool Shader::loadFromFile(const char *vertexPath, const char *fragmentPath, cons
     if(!checkError(fragmentShader, "FRAGMENT")) return false;
 
     unsigned int geometryShader;
-    if(geometryPath)
+    if(!geometryPath.empty())
     {
         const char * gShaderCode = geometryCode.c_str();
         geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
@@ -142,14 +126,14 @@ bool Shader::loadFromFile(const char *vertexPath, const char *fragmentPath, cons
     ID = glCreateProgram();
     glAttachShader(ID, vertexShader);
     glAttachShader(ID, fragmentShader);
-    if(geometryPath)
+    if(!geometryPath.empty())
         glAttachShader(ID, geometryShader);
     glLinkProgram(ID);
     if(!checkError(ID, "PROGRAM")) return false;
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
-    if(geometryPath)
+    if(!geometryPath.empty())
         glDeleteShader(geometryShader);
     return true;
 }
@@ -179,4 +163,17 @@ bool Shader::checkError(GLuint shader, std::string type)
         }
     }
     return true;
+}
+
+GLint Shader::getUniformLocation(const std::string &name)
+{
+    // 缓存优化：避免重复查询
+    if(m_uniformCache.find(name) != m_uniformCache.end())
+        return m_uniformCache[name];
+
+    GLint location = glGetUniformLocation(ID, name.c_str());
+    if(location == -1)
+        std::cerr << "Warning: Uniform '" << name << "' not found!" << std::endl;
+    m_uniformCache[name] = location;
+    return location;
 }

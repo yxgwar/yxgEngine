@@ -3,12 +3,12 @@
 #include "log.h"
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "renderer/camera.h"
+#include "input.h"
 
-struct WindowData
-{
-    Camera *camera;
-};
+// struct WindowData
+// {
+//     Camera *camera;
+// };
 
 class Window
 {
@@ -16,8 +16,9 @@ public:
     Window(int width, int height);
     ~Window();
 
-    void SetCallback(WindowData* windowData);
-    void ProcessInput(Camera& camera, float deltaTime);
+    // void SetCallback(WindowData* windowData);
+    void SetCallback();
+    // void ProcessInput(Camera& camera, float deltaTime);
     void OnUpdate();
 
     inline bool OpenWindow() {return !glfwWindowShouldClose(m_window);}

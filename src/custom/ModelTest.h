@@ -1,7 +1,7 @@
 #pragma once
 
 #include "renderer/camera.h"
-#include "object/model.h"
+#include "old/model.h"
 #include "Object.h"
 
 class ModelTest: public Object

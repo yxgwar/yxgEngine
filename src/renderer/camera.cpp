@@ -1,23 +1,27 @@
 #include "camera.h"
 
 Camera::Camera(float width, float height, float movementSpeed, float mouseSpeed, float fov)
-    :m_width(width), m_height(height), pos(0.0f, 2.0f, 5.0f), front(0.0f, 0.0f, -1.0f), up(0.0f, 1.0f, 0.0f), movementSpeed(movementSpeed), mouseSpeed(mouseSpeed), m_yaw(-90.0f), m_pitch(0.0f), m_fov(fov), Foucs(true)
+    :m_width(width), m_height(height), pos(0.0f, 2.0f, 5.0f), front(0.0f, 0.0f, -1.0f), up(0.0f, 1.0f, 0.0f), movementSpeed(movementSpeed), mouseSpeed(mouseSpeed), m_fov(fov), Foucs(true)
 {
     lastX = width / 2.0f;
     lastY = height / 2.0f;
     firstMouse = true;
     m_aspect = width / height;
+    m_yaw = glm::degrees(asinf(front.z / sqrtf(front.x * front.x + front.z + front.z)));
+    m_pitch = glm::degrees(asinf(front.y / sqrtf(front.x * front.x + front.z + front.z)));
     calView();
     calProjection();
 }
 
 Camera::Camera(float width, float height, glm::vec3 pos, glm::vec3 front, glm::vec3 up, float movementSpeed, float mouseSpeed, float fov)
-    :m_width(width), m_height(height), pos(pos), front(front), up(up), movementSpeed(movementSpeed), mouseSpeed(mouseSpeed), m_yaw(-90.0f), m_pitch(0.0f), m_fov(fov), Foucs(true)
+    :m_width(width), m_height(height), pos(pos), front(front), up(up), movementSpeed(movementSpeed), mouseSpeed(mouseSpeed), m_fov(fov), Foucs(true)
 {
     lastX = width / 2.0f;
     lastY = height / 2.0f;
     firstMouse = true;
     m_aspect = width / height;
+    m_yaw = glm::degrees(asinf(front.z / sqrtf(front.x * front.x + front.z + front.z)));
+    m_pitch = glm::degrees(asinf(front.y / sqrtf(front.x * front.x + front.z + front.z)));
     calView();
     calProjection();
 }

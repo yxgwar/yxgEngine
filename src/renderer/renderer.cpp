@@ -43,6 +43,9 @@ void Renderer::Init(int width, int height)
     m_blurShader = std::make_shared<Shader>("../assets/shaders/HDR/blur.vs", "../assets/shaders/HDR/blur.fs");
     m_blurShader->use();
     m_blurShader->setInt("image", 0);
+
+    RenderQuad::Init();
+    RenderCube::Init();
 }
 
 void Renderer::SetViewportSize(int width, int height)
