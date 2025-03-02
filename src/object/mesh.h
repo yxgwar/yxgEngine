@@ -25,6 +25,7 @@ class Mesh
 {
 public:
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices);
+    Mesh(float* vertices, unsigned int* indices, size_t vsize, size_t isize);
     ~Mesh() = default;
 
     void Draw();

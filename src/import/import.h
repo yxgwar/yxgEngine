@@ -21,7 +21,7 @@ struct MeshSlot;
 class Import
 {
 public:
-    static void GenDefaultMaterial();
+    static void GenDefault();
 
     static std::shared_ptr<Texture> LoadTexture(std::string& path);
 
@@ -39,4 +39,7 @@ public:
     // 材质 mesh (暂未启用)
     inline static std::unordered_map<std::string, std::shared_ptr<Material>> MaterialPool;
     inline static std::unordered_map<std::string, std::vector<std::shared_ptr<MeshSlot>>> MeshPool;
+private:
+    static void GenStandardQuad();
+    static void GenStandardCube();
 };

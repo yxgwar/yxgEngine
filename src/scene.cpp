@@ -44,6 +44,18 @@ void Scene::Init(int width, int height)
     rc->LoadModel("../assets/models/roze/roze.pmx");
     m_entities.emplace_back(entt);
 
+    entt = new Entity(id++, "wood");
+    tc = entt->AddComponent<TransformComponent>();
+    tc->position = glm::vec3(0.0f, -0.5f, 0.0f);
+    tc->SetRotation(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+    tc->scale = glm::vec3(25.0f, 25.0f, 1.0f);
+    rc = entt->AddComponent<RenderComponent>();
+    rc->meshes = Import::MeshPool["quad"];
+    rc->materials.emplace_back(Import::MaterialPool["default"]);
+    std::string path = "../assets/images/wood.png";
+    rc->materials[0]->AddTexture(Import::LoadTexture(path), "texture_diffuse", path);
+    m_entities.emplace_back(entt);
+
     // 主灯光
     // glm::vec3 lightP(0.0f, 5.0f, 5.0f);
     // m_light.SetPosition(lightP);

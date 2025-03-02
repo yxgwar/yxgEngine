@@ -1,6 +1,11 @@
 #include "component.h"
 #include "entity.h"
 
+void TransformComponent::SetRotation(float radius, glm::vec3 direction)
+{
+    rotation = glm::angleAxis(glm::radians(radius), glm::normalize(direction));
+}
+
 glm::mat4 TransformComponent::GetTransformMatrix() const
 {
     glm::mat4 matrix = glm::translate(glm::mat4(1.0f), position);

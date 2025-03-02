@@ -10,7 +10,7 @@ Application::Application(int width, int height)
 
     ImGuiRenderer::Init(m_window);
 
-    Import::GenDefaultMaterial();
+    Import::GenDefault();
 
     m_scene.Init(m_width, m_height);
 }

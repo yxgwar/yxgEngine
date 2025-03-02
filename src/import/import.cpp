@@ -94,15 +94,20 @@ std::shared_ptr<MeshSlot> processMesh(aiMesh *mesh, int index)
     );
 }
 
-void Import::GenDefaultMaterial()
+void Import::GenDefault()
 {
     ShaderPool["default"] = std::make_shared<Shader>("../assets/shaders/default/default.vs", "../assets/shaders/default/default.fs");
+    MaterialPool["default"] = std::make_shared<Material>(ShaderPool["default"]);
+
+    GenStandardQuad();
+    GenStandardCube();
 }
 
 std::shared_ptr<Texture> Import::LoadTexture(std::string &path)
 {
     if(TexturePool.find(path) == TexturePool.end())
     {
+        std::cout << "load texture:" << path << std::endl;
         TexturePool[path] = std::make_shared<Texture>(path);
         return TexturePool[path];
     }
@@ -112,6 +117,7 @@ std::shared_ptr<Texture> Import::LoadTexture(std::string &path)
 
 void Import::LoadModel(std::string &path, std::vector<std::shared_ptr<MeshSlot>>& meshes, std::vector<std::shared_ptr<Material>>& materials)
 {
+    std::cout << "load model:" << path << std::endl;
     Assimp::Importer importer;
     const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
     if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
@@ -157,4 +163,78 @@ void Import::LoadShader(std::string &vertexPath, std::string &fragmentPath, std:
         else
             ShaderPool[path] = std::make_shared<Shader>(SHADERPATH + vertexPath, SHADERPATH + fragmentPath, SHADERPATH + geometryPath);
     }
+}
+
+void Import::GenStandardQuad()
+{
+    float vertices[] = {
+         0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,  // 右上角
+         0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,  // 右下角
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  // 左下角
+        -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f   // 左上角
+    };
+
+    unsigned int indices[] = {
+        0, 2, 1, // 第一个三角形
+        0, 3, 2  // 第二个三角形
+    };
+    MeshPool["quad"].emplace_back(std::make_shared<MeshSlot>(std::make_shared<Mesh>(vertices, indices, sizeof(vertices), sizeof(indices)), 0));
+}
+
+void Import::GenStandardCube()
+{
+    float vertices[] = {
+        // 前面（Z+）
+        -0.5f,  0.5f, 0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 1.0f, // 0
+         0.5f,  0.5f, 0.5f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f, // 1
+         0.5f, -0.5f, 0.5f,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f, // 2
+        -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f, // 3
+      
+        // 后面（Z-）
+         0.5f,  0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, // 4
+         0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // 5
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, // 6
+        -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, // 7
+      
+        // 右面（X+）
+         0.5f,  0.5f, 0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f, // 8
+         0.5f, -0.5f, 0.5f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f, // 9
+         0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // 10
+         0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  0.0f, 1.0f, // 11
+      
+        // 左面（X-）
+        -0.5f,  0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // 12
+        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // 13
+        -0.5f, -0.5f, 0.5f,  -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // 14
+        -0.5f,  0.5f, 0.5f,  -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // 15
+      
+        // 顶面（Y+）
+        -0.5f, 0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f, // 16
+         0.5f, 0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // 17
+         0.5f, 0.5f, 0.5f,   0.0f, 1.0f, 0.0f, 1.0f, 1.0f, // 18
+        -0.5f, 0.5f, 0.5f,   0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // 19
+      
+        // 底面（Y-）
+        -0.5f, -0.5f, 0.5f,  0.0f, -1.0f, 0.0f, 0.0f, 0.0f, // 20
+         0.5f, -0.5f, 0.5f,  0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // 21
+         0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f, // 22
+        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // 23
+      };
+
+    unsigned int indices[] = {
+        // 前面
+        0, 2, 1,  0, 3, 2,
+        // 后面
+        4, 5, 6,  4, 6, 7,
+        // 右面
+        8, 9, 10, 8, 10, 11,
+        // 左面
+        12, 13, 14, 12, 14, 15,
+        // 顶面
+        16, 18, 17, 16, 18, 18,
+        // 底面
+        20, 22, 21, 20, 23, 22
+    };
+
+    MeshPool["cube"].emplace_back(std::make_shared<MeshSlot>(std::make_shared<Mesh>(vertices, indices, sizeof(vertices), sizeof(indices)), 0));
 }
