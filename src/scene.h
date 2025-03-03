@@ -13,7 +13,8 @@ public:
 
     void Init(int width, int height);
 
-    void OnUpdate();
+    void OnLogicUpdate(float deltaTime, Window& window);
+    void OnRenderUpdate(float deltaTime, Window& window);
 private:
     std::unique_ptr<Camera> m_camera;
     PointLight m_light;

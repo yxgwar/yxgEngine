@@ -1,18 +1,9 @@
 #pragma once
 
-#include "glad/glad.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-
-enum class CameraKeyCode
-{
-    FORWARD,
-    BACKWARD,
-    LEFT,
-    RIGHT,
-    UP,
-    DOWN
-};
+#include "window.h"
+#include "input.h"
 
 class Camera
 {
@@ -25,18 +16,13 @@ public:
     inline glm::vec3 getPosition() const {return pos;}
     inline glm::vec3 getFront() const {return front;}
 
-    void KeyboardControl(CameraKeyCode code, float deltaTime);
-    void MouseControl(float xPos, float yPos);
-    void ScrollControl(float yOffset);
+    void OnUpdate(float deltaTime, Window& window);
 
-    void FreeCamera();
-    inline void ActiveCamera() {Foucs = true;}
-
-    bool Foucs;
 private:
     void calView();
     void calProjection();
 private:
+    bool m_foucs;
     glm::vec3 pos;
     glm::vec3 front;
     glm::vec3 up;
@@ -54,8 +40,4 @@ private:
     float m_width;
     float m_height;
     float m_aspect;
-
-    float lastX;
-    float lastY;
-    bool firstMouse;
 };

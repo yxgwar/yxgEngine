@@ -62,7 +62,12 @@ void Scene::Init(int width, int height)
     // m_light.SetScale(glm::vec3(0.1f));
 }
 
-void Scene::OnUpdate()
+void Scene::OnLogicUpdate(float deltaTime, Window& window)
+{
+    m_camera->OnUpdate(deltaTime, window);
+}
+
+void Scene::OnRenderUpdate(float deltaTime, Window &window)
 {
     Renderer::UpdateCameraUBO(*m_camera);
     Renderer::StartRender();

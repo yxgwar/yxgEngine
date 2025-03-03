@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mesh.h"
+#include "old/mesh.h"
 #include <unordered_map>
 
 #include "assimp/Importer.hpp"

@@ -1,25 +1,11 @@
 #include "application.h"
 
-// void renderScene(Shader& shader)
-// {
-//     // floor
-//     shader.use();
-//     glm::mat4 model = glm::mat4(1.0f);
-//     model = glm::translate(model, glm::vec3(0.0f, -0.5f, 0.0f));
-//     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-//     model = glm::scale(model, glm::vec3(25.0f, 25.0f, 1.0f));
-//     shader.setMat4("model", model);
-//     shader.setMat3("NormalM", glm::transpose(glm::inverse(glm::mat3(model))));
-//     RenderQuad::DrawwithShader(shader);
-// }
-
 int main()
 {
     Application app;
 
     app.Run();
 
-    // Texture wood("../assets/images/wood.png");
     // float exposure = 1.0f;
     // while(window.OpenWindow())
     // {
@@ -49,8 +35,6 @@ int main()
         // shadowMapShader.setVec3("pointLightPos", light.GetPosition());
         // shadowMapShader.setFloat("time", currentTime);
         // light.BindDepthMap(4);
-        // wood.bind(0);
-        // renderScene(shadowMapShader);
         // raye.StartDrawwithShader(camera, shadowMapShader);
         // roze.StartDrawwithShader(camera, shadowMapShader);
         // light.Draw();

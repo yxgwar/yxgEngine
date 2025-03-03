@@ -1,8 +1,8 @@
 #pragma once
 
-#include "renderer/camera.h"
 #include "old/model.h"
 #include "Object.h"
+#include "renderer/camera.h"
 
 class ModelTest: public Object
 {

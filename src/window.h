@@ -2,13 +2,7 @@
 
 #include "log.h"
 #include "glad/glad.h"
-#include "GLFW/glfw3.h"
 #include "input.h"
-
-// struct WindowData
-// {
-//     Camera *camera;
-// };
 
 class Window
 {
@@ -16,10 +10,12 @@ public:
     Window(int width, int height);
     ~Window();
 
-    // void SetCallback(WindowData* windowData);
     void SetCallback();
-    // void ProcessInput(Camera& camera, float deltaTime);
+    void ProcessInput();
     void OnUpdate();
+
+    inline void Focus() {glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);}
+    inline void UnFocus() {glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);}
 
     inline bool OpenWindow() {return !glfwWindowShouldClose(m_window);}
     inline void SetTitle(std::string& title) {glfwSetWindowTitle(m_window, title.c_str());}
