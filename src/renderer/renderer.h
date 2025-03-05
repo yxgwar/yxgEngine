@@ -6,6 +6,7 @@
 #include "openGL/framebuffer.h"
 #include "openGL/uniformbuffer.h"
 #include "camera.h"
+#include "ImGuiRenderer.h"
 #include <memory>
 
 class Renderer
@@ -21,6 +22,9 @@ public:
     //Screen
     static void StartRender();
     static void EndRender();
+
+    //Editor mode
+    static void EndRenderEditor();
 
     //hdr
     static void StartRenderHDR();

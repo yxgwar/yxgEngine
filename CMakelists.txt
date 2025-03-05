@@ -14,7 +14,14 @@ include_directories(
     "src"
 )
 
-file(GLOB_RECURSE src ${PROJECT_SOURCE_DIR}/src/*.cpp)
+file(GLOB src 
+    ${PROJECT_SOURCE_DIR}/src/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/renderer/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/renderer/openGL/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/object/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/import/*.cpp
+)
+
 file(GLOB imgui 
     ./vendor/imgui/*.cpp
     ./vendor/imgui/backends/imgui_impl_opengl3.cpp

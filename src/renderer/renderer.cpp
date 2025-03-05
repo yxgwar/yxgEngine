@@ -20,7 +20,7 @@ void Renderer::Init(int width, int height)
     // m_screen->attachColor(width, height);
     // m_screen->attachDepthStencil(width, height);
     m_screen->attachMultiple(width, height);
-    m_screenShader = std::make_shared<Shader>("../assets/shaders/Screen/frameScreen.vs", "../assets/shaders/Screen/frameScreen.fs");
+    m_screenShader = std::make_shared<Shader>("../assets/shaders/PostProcess/PostProcess.vs", "../assets/shaders/PostProcess/PostProcess.fs");
     m_screenShader->use();
     m_screenShader->setInt("screenTexture", 0);
     m_screenShader->setInt("samples", 4);
@@ -97,13 +97,28 @@ void Renderer::EndRender()
         m_screen->unbind();
         m_screen->bindTexture();
 
-        glDisable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        RenderQuad::DrawwithShader(*m_screenShader);
+    }
+    else
+        std::cout << "screenbuffer Uninit!" << std::endl;
+}
+
+void Renderer::EndRenderEditor()
+{
+    if(m_screen)
+    {
+        ImGuiRenderer::imguiF->bind();
+        m_screen->bindTexture();
+
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         RenderQuad::DrawwithShader(*m_screenShader);
 
-        glEnable(GL_DEPTH_TEST);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     else
         std::cout << "screenbuffer Uninit!" << std::endl;

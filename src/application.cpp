@@ -13,6 +13,12 @@ Application::Application(int width, int height)
     Import::GenDefault();
 
     m_scene.Init(m_width, m_height);
+
+    RenderContext& renderContext = RenderContext::GetInstance();
+    m_renderPipeline.AddPass(std::make_unique<PrePass>(renderContext));
+    m_renderPipeline.AddPass(std::make_unique<ShadowMapPass>(renderContext));
+    m_renderPipeline.AddPass(std::make_unique<ForwardPass>(renderContext, m_width, m_height));
+    m_renderPipeline.AddPass(std::make_unique<PostProcessPass>());
 }
 
 void Application::Run()
@@ -26,10 +32,10 @@ void Application::Run()
         m_window.ProcessInput();
         
         m_scene.OnLogicUpdate(deltaTime, m_window);
-        m_scene.OnRenderUpdate(deltaTime, m_window);
+        m_scene.OnRenderUpdate(deltaTime, m_renderPipeline);
 
-        // ImGuiRenderer::Begin();
-        // ImGuiRenderer::End();
+        ImGuiRenderer::Begin();
+        ImGuiRenderer::End();
         m_window.OnUpdate();
 
         Input::OnUpdate();

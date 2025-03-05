@@ -7,6 +7,7 @@ out VS_OUT {
     vec3 FragPos;
     vec3 Normal;
     vec2 TexCoords;
+    vec4 FragPosLightSpace;
 } vs_out;
 
 layout (std140, binding = 0) uniform Camera
@@ -17,6 +18,7 @@ layout (std140, binding = 0) uniform Camera
 
 uniform mat4 model;
 uniform mat3 NormalM;
+uniform mat4 lightSpaceMatrix;
 
 void main()
 {
@@ -24,4 +26,5 @@ void main()
     vs_out.FragPos = vec3(model * vec4(position, 1.0));
     vs_out.Normal = NormalM * normal;
     vs_out.TexCoords = texCoords;
+    vs_out.FragPosLightSpace = lightSpaceMatrix * vec4(vs_out.FragPos, 1.0);
 }

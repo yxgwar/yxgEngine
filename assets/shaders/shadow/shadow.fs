@@ -6,21 +6,18 @@ in VS_OUT {
     vec3 FragPos;
     vec3 Normal;
     vec2 TexCoords;
+    vec4 FragPosLightSpace;
 } fs_in;
 
-uniform sampler2D texture_diffuse1;
+uniform sampler2D texture_diffuse;
 
-uniform samplerCube pointShadowMap;
-uniform vec3 pointLightPos;
-uniform vec3 pointLightColor;
+layout(binding = 7) uniform sampler2D shadowMap;
+uniform vec3 lightPos;
+uniform vec3 lightColor;
 
 uniform vec3 viewPos;
-// uniform float far_plane;
-
-uniform float time;
 
 #define EPS 1e-3
-#define lightArea 0.1
 
 #define SamplerNum 32
 
@@ -102,119 +99,51 @@ mat2 getRandomRotation(vec2 uv)
     return mat2(cos(angle), sin(angle), -sin(angle), cos(angle));
 }
 
-// float ShadowCalculation()
-// {
-//     vec3 fragToLight = fs_in.FragPos - pointLightPos;
-//     float shadow = 0.0;
-//     float bias = 0.15;
-//     float viewDistance = length(viewPos - fs_in.FragPos);
-//     float diskRadius = (1.0 + (viewDistance / 100.0)) / 25.0;
-//     float currentDepth = length(fragToLight);
-//     for(int i = 0; i < SamplerNum; ++i)
-//     {
-//         float closestDepth = texture(pointShadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
-//         closestDepth *= 100.0;   // Undo mapping [0;1]
-//         if(currentDepth - bias < closestDepth)
-//             shadow += 1.0;
-//     }
-//     shadow /= float(SamplerNum);
-//     return shadow;
-// }
-
-// 计算立方体贴图深度比较
-float sampleCubeDepth(vec3 fragToLight)
+float PCF(float bias)
 {
-    float closestDepth = texture(pointShadowMap, fragToLight).r;
-    closestDepth *= 50.0; // 假设深度存储在 [0,1] 线性空间
-    return closestDepth;
-}
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
 
-// 块搜索：返回平均遮挡深度
-float findBlockerDepth(vec3 N ,vec3 T, vec3 B, float fragmentDepth)
-{
-    float searchRadius = lightArea * (fragmentDepth - 0.1) / fragmentDepth;
-    float totalDepth = 0.0;
-    int blockers = 0;
-
-    mat2 rot = getRandomRotation(fs_in.FragPos.xy); // 随机旋转矩阵
-
-    for (int i = 0; i < SamplerNum; i++)
-    {
-        vec2 rpoisson = rot * poissonDisk[i];
-        vec3 offset = N + (T * rpoisson.x + B * rpoisson.y) * searchRadius;
-        float sampleDepth = sampleCubeDepth(offset);
-
-        if (sampleDepth + EPS < fragmentDepth) // 当前样本是遮挡物
-        {
-            totalDepth += sampleDepth;
-            blockers++;
-        }
-    }
-
-    if (blockers > 0) return totalDepth / blockers;
-    else return -1.0; // 无遮挡物
-}
-
-float PCF(vec3 N ,vec3 T, vec3 B, float fragmentDepth, float filterRadius, float bias)
-{
     float visibility = 0.0;
     mat2 rot = getRandomRotation(fs_in.FragPos.xy); // 随机旋转矩阵
+
+    // perform perspective divide
+    vec3 projCoords = fs_in.FragPosLightSpace.xyz / fs_in.FragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+
     for (int i = 0; i < SamplerNum; i++)
     {
         vec2 rpoisson = rot * poissonDisk[i];
-        vec3 offset = N + (T * rpoisson.x + B * rpoisson.y) * filterRadius;
-        float sampleDepth = sampleCubeDepth(offset);
-        visibility += (fragmentDepth - bias > sampleDepth + EPS) ? 0.0 : 1.0;
+        // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+        float closestDepth = texture(shadowMap, projCoords.xy + rpoisson * texelSize).r;
+        visibility += (projCoords.z - bias > closestDepth + EPS) ? 0.0 : 1.0;
     }
     return visibility / SamplerNum;
 }
 
-float PCSS(vec3 fragToLight, float fragmentDepth, float bias)
-{
-    // 计算当前立方体贴图面的正交基
-    vec3 N = normalize(fragToLight);
-    vec3 T = normalize(cross(N, vec3(0.0, 1.0, 0.0)));
-    vec3 B = cross(N, T);
-    // 1. 块搜索
-    float avgBlockerDepth = findBlockerDepth(N, T, B, fragmentDepth);
-    if (avgBlockerDepth == -1.0) return 1.0; // 无遮挡，完全可见
-    // 2. 计算半影大小
-    float penumbra = (fragmentDepth - avgBlockerDepth) / avgBlockerDepth * lightArea * 0.1 / fragmentDepth;
-    // 3. PCF 滤波
-    return PCF(N, T, B, fragmentDepth, penumbra, bias);
-}
-
 vec3 CalcPointLight(vec3 normal, vec3 viewDir, vec3 diffTex, vec3 specTex)
 {
-    vec3 fragToLight = fs_in.FragPos - pointLightPos;
+    vec3 fragToLight = fs_in.FragPos - lightPos;
     float fragmentDepth = length(fragToLight);
 
     vec3 ambient = 0.3 * diffTex;
 
-    vec3 lightDir = normalize(pointLightPos - fs_in.FragPos);
+    vec3 lightDir = normalize(lightPos - fs_in.FragPos);
     float diff = max(dot(normal, lightDir), 0.0);
-    // float attenuation = 1.0 / (fragmentDepth * fragmentDepth);
-    float attenuation = 1.0;
-    vec3 diffuse = diff * attenuation * diffTex * 0.5;
+    vec3 diffuse = diff * diffTex * 0.5;
 
     vec3 hvec = normalize(lightDir + viewDir);
     float spec = pow(max(dot(hvec, normal), 0.0), 64);
-    vec3 specular = spec * attenuation * specTex * 0.3;
+    vec3 specular = spec * specTex * 0.3;
 
-    // return ambient + (diffuse + specular) * ShadowCalculation();
-    
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.02);
-    // return ambient + (diffuse + specular) * PCSS(fragToLight, fragmentDepth, bias);
-    // 计算当前立方体贴图面的正交基
-    vec3 N = normalize(fragToLight);
-    vec3 T = normalize(cross(N, vec3(0.0, 1.0, 0.0)));
-    vec3 B = cross(N, T);
-    return ambient + (diffuse + specular) * PCF(N, T, B, fragmentDepth, 0.0005, bias) * pointLightColor;
+    // float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.02);
+    float bias = 0.0;
+    return (ambient + (diffuse + specular) * PCF(bias)) * lightColor;
 }
 
 void main()
 {
-    vec3 diffTex = texture(texture_diffuse1, fs_in.TexCoords).rgb;
+    vec3 diffTex = texture(texture_diffuse, fs_in.TexCoords).rgb;
 
     vec3 normal = normalize(fs_in.Normal);
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
@@ -226,7 +155,4 @@ void main()
     float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
     if(brightness > 1.0)
         BrightColor = vec4(FragColor.rgb, 1.0);
-    // vec3 fragToLight = fs_in.FragPos - pointLightPos;
-    // float closestDepth = texture(pointShadowMap, fragToLight).r;
-    // FragColor = vec4(vec3(closestDepth), 1.0);
 }

@@ -32,7 +32,7 @@ public:
     void setMat4(const std::string &name, glm::mat4 mat);
 private:
     bool loadFromFile(const std::string& vertexPath, const std::string& fragmentPath, const std::string& geometryPath = std::string());
-    bool checkError(GLuint shader, std::string type);
+    bool checkError(GLuint shader, std::string type, const std::string& vertexPath);
 private:
     GLuint ID;
     std::unordered_map<std::string, GLint> m_uniformCache; // Uniform位置缓存

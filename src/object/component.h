@@ -4,6 +4,8 @@
 #include "material.h"
 #include "import/import.h"
 #include "renderer/camera.h"
+#include <variant>
+#include <array>
 
 class Entity;
 
@@ -47,5 +49,32 @@ public:
 
     void LoadModel(std::string path);
 
-    void Render(Camera& camera) const;
+    void Render(Camera& camera, Entity* light) const;
+    void RenderDepth(glm::mat4& lightCamera) const;
+};
+
+// 摄像机
+class CameraComponent: public Component
+{
+public:
+    using lightMatrices = std::variant<glm::mat4, std::array<glm::mat4, 6>>;
+    lightMatrices view;
+    glm::mat4 projection;
+};
+
+// 光源(暂未添加更新功能)
+class LightComponent: public Component
+{
+public:
+    glm::vec3 color = glm::vec3(1.0f);
+    float strength = 1.0f;
+    bool castShadow = false;
+
+    enum class Type { Point, Directional, Spot };
+    Type type;
+
+    glm::vec3 direction = glm::vec3(0.0f, 0.0f, -1.0f);
+    float theta = 45.0f;
+
+    void EnableShadow();
 };

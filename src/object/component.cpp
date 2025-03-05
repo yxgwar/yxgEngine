@@ -18,7 +18,7 @@ void RenderComponent::LoadModel(std::string path)
     Import::LoadModel(path, meshes, materials);
 }
 
-void RenderComponent::Render(Camera &camera) const
+void RenderComponent::Render(Camera &camera, Entity* light) const
 {
     if (auto transform = owner->GetComponent<TransformComponent>())
     {
@@ -30,6 +30,10 @@ void RenderComponent::Render(Camera &camera) const
             int matIndex = meshSlot->materialIndex;
             materialGroups[matIndex].emplace_back(meshSlot);
         }
+
+        auto rc = light->GetComponent<TransformComponent>();
+        auto lc = light->GetComponent<LightComponent>();
+        auto cc = light->GetComponent<CameraComponent>();
         
         // 遍历每个材质组
         for (const auto& [index, meshslots] : materialGroups)
@@ -37,9 +41,12 @@ void RenderComponent::Render(Camera &camera) const
             const auto& material = materials[index];
 
             // 绑定材质并设置全局参数（如相机）
+            material->SetMatrix4("lightSpaceMatrix", cc->projection * std::get<glm::mat4>(cc->view));
             material->SetVector3("viewPos", camera.getPosition());
             material->SetMatrix4("model", entityMatrix);
             material->SetMatrix3("NormalM", glm::transpose(glm::inverse(glm::mat3(entityMatrix))));
+            material->SetVector3("lightPos", rc->position);
+            material->SetVector3("lightColor", lc->color);
             material->Bind();
 
             // 绘制该材质下的所有MeshSlot
@@ -54,6 +61,67 @@ void RenderComponent::Render(Camera &camera) const
                 // 绘制Mesh
                 meshslot->mesh->Draw();
             }
+        }
+    }
+}
+
+void RenderComponent::RenderDepth(glm::mat4 &lightCamera) const
+{
+    if (auto transform = owner->GetComponent<TransformComponent>())
+    {
+        glm::mat4 entityMatrix = transform->GetTransformMatrix();
+
+        auto material = Import::MaterialPool["depthMap"];
+        // 绑定材质并设置全局参数（如相机）
+        material->SetMatrix4("lightSpaceMatrix", lightCamera);
+        material->SetMatrix4("model", entityMatrix);
+        material->Bind();
+
+        // 绘制该材质下的所有MeshSlot
+        for (const auto& meshslot : meshes)
+        {
+            meshslot->mesh->Draw();
+        }
+    }
+}
+
+void LightComponent::EnableShadow()
+{
+    if(!castShadow)
+    {
+        castShadow = true;
+        auto shadowCamera = owner->AddComponent<CameraComponent>();
+        auto tc = owner->GetComponent<TransformComponent>();
+        glm::vec3 position = tc->position;
+        switch (type)
+        {
+            case Type::Point:
+            {
+                shadowCamera->projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+                std::array<glm::mat4, 6> mview;
+                mview[0] = glm::lookAt(position, position + glm::vec3( 1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0));
+                mview[1] = glm::lookAt(position, position + glm::vec3(-1.0,  0.0,  0.0), glm::vec3(0.0, -1.0,  0.0));
+                mview[2] = glm::lookAt(position, position + glm::vec3( 0.0,  1.0,  0.0), glm::vec3(0.0,  0.0,  1.0));
+                mview[3] = glm::lookAt(position, position + glm::vec3( 0.0, -1.0,  0.0), glm::vec3(0.0,  0.0, -1.0));
+                mview[4] = glm::lookAt(position, position + glm::vec3( 0.0,  0.0,  1.0), glm::vec3(0.0, -1.0,  0.0));
+                mview[5] = glm::lookAt(position, position + glm::vec3( 0.0,  0.0, -1.0), glm::vec3(0.0, -1.0,  0.0));
+                shadowCamera->view = mview;
+                break;
+            }
+            case Type::Directional:
+            {
+                shadowCamera->projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+                shadowCamera->view = glm::lookAt(position, position + direction, glm::vec3(0.0f, 1.0f, 0.0f));
+                break;
+            }
+            case Type::Spot:
+            {
+                shadowCamera->projection = glm::perspective(glm::radians(theta), 1.0f, 0.1f, 100.0f);
+                shadowCamera->view = glm::lookAt(position, position + direction, glm::vec3(0.0f, 1.0f, 0.0f));
+                break;
+            }
+            default:
+                break;
         }
     }
 }

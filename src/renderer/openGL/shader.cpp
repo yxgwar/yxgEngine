@@ -94,7 +94,7 @@ bool Shader::loadFromFile(const std::string& vertexPath, const std::string& frag
     }
     catch(std::ifstream::failure e)
     {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ:" << vertexPath << std::endl;
         return false;
     }
 
@@ -105,13 +105,13 @@ bool Shader::loadFromFile(const std::string& vertexPath, const std::string& frag
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vShaderCode, NULL);
     glCompileShader(vertexShader);
-    if(!checkError(vertexShader, "VERTEX")) return false;
+    if(!checkError(vertexShader, "VERTEX", vertexPath)) return false;
 
     unsigned int fragmentShader;
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fShaderCode, NULL);
     glCompileShader(fragmentShader);
-    if(!checkError(fragmentShader, "FRAGMENT")) return false;
+    if(!checkError(fragmentShader, "FRAGMENT", fragmentPath)) return false;
 
     unsigned int geometryShader;
     if(!geometryPath.empty())
@@ -120,7 +120,7 @@ bool Shader::loadFromFile(const std::string& vertexPath, const std::string& frag
         geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
         glShaderSource(geometryShader, 1, &gShaderCode, NULL);
         glCompileShader(geometryShader);
-        if(!checkError(geometryShader, "GEOMETRY")) return false;
+        if(!checkError(geometryShader, "GEOMETRY", geometryPath)) return false;
     }
 
     ID = glCreateProgram();
@@ -129,7 +129,7 @@ bool Shader::loadFromFile(const std::string& vertexPath, const std::string& frag
     if(!geometryPath.empty())
         glAttachShader(ID, geometryShader);
     glLinkProgram(ID);
-    if(!checkError(ID, "PROGRAM")) return false;
+    if(!checkError(ID, "PROGRAM", vertexPath)) return false;
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
@@ -138,7 +138,7 @@ bool Shader::loadFromFile(const std::string& vertexPath, const std::string& frag
     return true;
 }
 
-bool Shader::checkError(GLuint shader, std::string type)
+bool Shader::checkError(GLuint shader, std::string type, const std::string& path)
 {
     int  success;
     char infoLog[512];
@@ -148,7 +148,7 @@ bool Shader::checkError(GLuint shader, std::string type)
         if(!success)
         {
             glGetShaderInfoLog(shader, 512, NULL, infoLog);
-            std::cout << "ERROR::SHADER::" << type <<"::COMPILATION_FAILED\n" << infoLog << std::endl;
+            std::cout << "ERROR::SHADER::" << path << " " << type <<"::COMPILATION_FAILED\n" << infoLog << std::endl;
             return false;
         }
     }

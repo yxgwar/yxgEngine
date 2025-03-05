@@ -3,6 +3,8 @@
 #include "window.h"
 #include "renderer/renderer.h"
 #include "renderer/ImGuiRenderer.h"
+#include "renderer/rendercontext.h"
+#include "renderer/renderpipeline.h"
 #include "scene.h"
 
 class Application
@@ -16,6 +18,7 @@ private:
     int m_width, m_height;
     Window m_window;
     Scene m_scene;
+    RenderPipeline m_renderPipeline;
 
     float m_lastTime = 0.0f;
 };

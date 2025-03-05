@@ -8,6 +8,7 @@ class Texture
 public:
     Texture(const std::string& path);
     Texture(const std::string& directory, const std::string& path, std::string& type);
+    Texture();
     ~Texture();
 
     void bind(int index);

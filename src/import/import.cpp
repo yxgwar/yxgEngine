@@ -96,11 +96,23 @@ std::shared_ptr<MeshSlot> processMesh(aiMesh *mesh, int index)
 
 void Import::GenDefault()
 {
-    ShaderPool["default"] = std::make_shared<Shader>("../assets/shaders/default/default.vs", "../assets/shaders/default/default.fs");
+    // 默认渲染材质（支持简单的diffuse贴图）
+    // ShaderPool["default"] = std::make_shared<Shader>("../assets/shaders/default/default.vs", "../assets/shaders/default/default.fs");
+    ShaderPool["default"] = std::make_shared<Shader>("../assets/shaders/shadow/shadow.vs", "../assets/shaders/shadow/shadow.fs");
     MaterialPool["default"] = std::make_shared<Material>(ShaderPool["default"]);
-
+    // 生成标准矩形与立方体
     GenStandardQuad();
     GenStandardCube();
+
+    // 生成全白纹理
+    TexturePool["white"] = std::make_shared<Texture>();
+
+    // 深度渲染材质
+    ShaderPool["depthMap"] = std::make_shared<Shader>("../assets/shaders/depthMap/depthMap.vs", "../assets/shaders/depthMap/depthMap.fs");
+    MaterialPool["depthMap"] = std::make_shared<Material>(ShaderPool["depthMap"]);
+
+    // 后处理
+    ShaderPool["PostProcess"] = std::make_shared<Shader>("../assets/shaders/PostProcess/PostProcess.vs", "../assets/shaders/PostProcess/PostProcess.fs");
 }
 
 std::shared_ptr<Texture> Import::LoadTexture(std::string &path)

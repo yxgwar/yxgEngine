@@ -14,7 +14,6 @@ Scene::~Scene()
 void Scene::Init(int width, int height)
 {
     m_camera = std::make_unique<Camera>(width, height);
-    Renderer::SetCameraUBO(*m_camera);
 
     // std::vector<std::string> faces
     // {
@@ -56,10 +55,21 @@ void Scene::Init(int width, int height)
     rc->materials[0]->AddTexture(Import::LoadTexture(path), "texture_diffuse", path);
     m_entities.emplace_back(entt);
 
-    // 主灯光
-    // glm::vec3 lightP(0.0f, 5.0f, 5.0f);
-    // m_light.SetPosition(lightP);
-    // m_light.SetScale(glm::vec3(0.1f));
+    entt = new Entity(id++, "light");
+    tc = entt->AddComponent<TransformComponent>();
+    tc->position = glm::vec3(0.0f, 5.0f, 5.0f);
+    tc->scale = glm::vec3(0.1f);
+    rc = entt->AddComponent<RenderComponent>();
+    rc->meshes = Import::MeshPool["quad"];
+    rc->materials.emplace_back(std::make_shared<Material>(std::make_shared<Shader>("../assets/shaders/default/default.vs", "../assets/shaders/default/default.fs")));
+    rc->materials[0]->AddTexture(Import::TexturePool["white"], "texture_diffuse");
+    auto lc = entt->AddComponent<LightComponent>();
+    lc->type = LightComponent::Type::Directional;
+    lc->direction = -tc->position;
+    tc->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 1.0f), lc->direction);
+    lc->EnableShadow();
+    mainLight = entt;
+    m_entities.emplace_back(entt);
 }
 
 void Scene::OnLogicUpdate(float deltaTime, Window& window)
@@ -67,16 +77,8 @@ void Scene::OnLogicUpdate(float deltaTime, Window& window)
     m_camera->OnUpdate(deltaTime, window);
 }
 
-void Scene::OnRenderUpdate(float deltaTime, Window &window)
+void Scene::OnRenderUpdate(float deltaTime, RenderPipeline& pipeline)
 {
-    Renderer::UpdateCameraUBO(*m_camera);
-    Renderer::StartRender();
-    for(auto e: m_entities)
-    {
-        if(auto render = e->GetComponent<RenderComponent>())
-        {
-            render->Render(*m_camera);
-        }
-    }
-    Renderer::EndRender();
+    pipeline.UpdateGlobalUBO(m_camera.get(), RenderContext::GetInstance());
+    pipeline.Execute(*this, RenderContext::GetInstance());
 }
