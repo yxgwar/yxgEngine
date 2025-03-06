@@ -49,19 +49,28 @@ void ShadowMapPass::Execute(Scene &scene, RenderContext &context)
     fbo->unbind();
 }
 
-ForwardPass::ForwardPass(RenderContext &context, int width, int height)
+ForwardPass::ForwardPass(RenderContext &context, bool hdr, int width, int height)
+    :m_hdr(hdr)
 {
-    context.GenForwad(width, height);
+    if(hdr)
+        context.GenHDR(width, height);
+    else
+        context.GenForwad(width, height);
 }
 
 void ForwardPass::Execute(Scene &scene, RenderContext &context)
 {
-    auto fbo = context.GetFBO(FBOType::Forward);
+    std::shared_ptr<FrameBuffer> fbo;
+    if(m_hdr)
+        fbo = context.GetFBO(FBOType::HDR);
+    else
+        fbo = context.GetFBO(FBOType::Forward);
     fbo->bind();
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    auto camera = scene.GetCamera();
 
+    auto camera = scene.GetCamera();
     auto light = scene.GetMainLight();
     for(auto entity : scene.GetEntities())
     {
@@ -73,16 +82,63 @@ void ForwardPass::Execute(Scene &scene, RenderContext &context)
     fbo->unbind();
 }
 
+PostProcessPass::PostProcessPass(bool hdr)
+    :m_hdr(hdr)
+{
+}
+
 void PostProcessPass::Execute(Scene &scene, RenderContext &context)
 {
-    auto fbo = context.GetFBO(FBOType::Forward);
-    fbo->bindTexture();
-    ImGuiRenderer::imguiF->bind();
+    std::shared_ptr<FrameBuffer> fbo;
+    if(m_hdr)
+    {
+        fbo = context.GetFBO(FBOType::HDR);
+        fbo->bindSingleTexture(1);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        bool horizontal = true;
+        int amount = 10;
+        auto blurShader = Import::ShaderPool["blur"];
+        blurShader->use();
+        auto blurh = context.GetFBO(FBOType::BLURH);
+        auto blurv = context.GetFBO(FBOType::BLURV);
+        for (int i = 0; i <= amount; i++)
+        {
+            if(horizontal)
+                blurh->bind();
+            else
+                blurv->bind();
+            blurShader->setInt("horizontal", horizontal);
+            RenderQuad::DrawwithShader(*blurShader);
+            if(horizontal)
+                blurh->bindTexture();
+            else
+                blurv->bindTexture();
+            
+            horizontal = !horizontal;
+        }
+        ImGuiRenderer::imguiF->bind();
 
-    RenderQuad::DrawwithShader(*Import::ShaderPool["PostProcess"]);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        fbo->bindSingleTexture(0);
+        if(!horizontal)
+            blurh->bindTexture(1);
+        else
+            blurv->bindTexture(1);
+
+        RenderQuad::DrawwithShader(*Import::ShaderPool["HDR"]);
+    }
+    else
+    {
+        fbo = context.GetFBO(FBOType::Forward);
+        fbo->bindTexture();
+        ImGuiRenderer::imguiF->bind();
+
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        RenderQuad::DrawwithShader(*Import::ShaderPool["PostProcess"]);
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

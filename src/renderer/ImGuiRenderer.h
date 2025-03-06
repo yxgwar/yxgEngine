@@ -4,7 +4,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "window.h"
-#include "renderer.h"
+#include "openGL/framebuffer.h"
+#include <memory>
 
 class ImGuiRenderer
 {

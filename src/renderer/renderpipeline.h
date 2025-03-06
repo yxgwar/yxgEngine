@@ -44,13 +44,19 @@ public:
 class ForwardPass: public IRenderPass
 {
 public:
-    ForwardPass(RenderContext& context, int width = 1920, int height = 1080);
+    ForwardPass(RenderContext& context, bool hdr = false, int width = 1920, int height = 1080);
 
     void Execute(Scene& scene, RenderContext& context) override;
+private:
+    bool m_hdr;
 };
 
 class PostProcessPass: public IRenderPass
 {
 public:
+    PostProcessPass(bool hdr = false);
+
     void Execute(Scene& scene, RenderContext& context) override;
+private:
+    bool m_hdr;
 };

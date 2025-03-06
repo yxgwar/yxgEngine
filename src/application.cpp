@@ -6,7 +6,7 @@ Application::Application(int width, int height)
 {
     m_window.SetCallback();
 
-    Renderer::Init(m_width, m_height);
+    RenderQuad::Init();
 
     ImGuiRenderer::Init(m_window);
 
@@ -15,10 +15,11 @@ Application::Application(int width, int height)
     m_scene.Init(m_width, m_height);
 
     RenderContext& renderContext = RenderContext::GetInstance();
+    bool hdr = true;
     m_renderPipeline.AddPass(std::make_unique<PrePass>(renderContext));
     m_renderPipeline.AddPass(std::make_unique<ShadowMapPass>(renderContext));
-    m_renderPipeline.AddPass(std::make_unique<ForwardPass>(renderContext, m_width, m_height));
-    m_renderPipeline.AddPass(std::make_unique<PostProcessPass>());
+    m_renderPipeline.AddPass(std::make_unique<ForwardPass>(renderContext, hdr, m_width, m_height));
+    m_renderPipeline.AddPass(std::make_unique<PostProcessPass>(hdr));
 }
 
 void Application::Run()

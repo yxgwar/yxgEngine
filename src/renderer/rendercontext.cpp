@@ -26,6 +26,28 @@ void RenderContext::GenForwad(int width, int height)
     postShader->setVec2("textureSize", width, height);
 }
 
+void RenderContext::GenHDR(int width, int height)
+{
+    std::shared_ptr<FrameBuffer> fbo = std::make_shared<FrameBuffer>();
+    fbo->attachHDR(width, height);
+    fboPool[(int)FBOType::HDR] = fbo;
+    auto hdrShader = Import::ShaderPool["HDR"];
+    hdrShader->use();
+    hdrShader->setInt("scene", 0);
+    hdrShader->setInt("bloomBlur", 1);
+    hdrShader->setFloat("exposure", 1.0f);
+
+    std::shared_ptr<FrameBuffer> blurh = std::make_shared<FrameBuffer>();
+    blurh->attachPingPong(width, height);
+    fboPool[(int)FBOType::BLURH] = blurh;
+    std::shared_ptr<FrameBuffer> blurv = std::make_shared<FrameBuffer>();
+    blurv->attachPingPong(width, height);
+    fboPool[(int)FBOType::BLURV] = blurv;
+    auto blurShader = Import::ShaderPool["blur"];
+    blurShader->use();
+    blurShader->setInt("image", 0);
+}
+
 void RenderContext::GenUBO()
 {
     cameraUBO = std::make_unique<UniformBuffer>(2 * sizeof(glm::mat4));
