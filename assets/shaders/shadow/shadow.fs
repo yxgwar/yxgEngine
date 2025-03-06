@@ -19,7 +19,7 @@ uniform vec3 viewPos;
 
 #define EPS 1e-3
 
-#define SamplerNum 32
+#define SamplerNum 64
 
 const vec2 poissonDisk[64] = vec2[]
 (
@@ -101,7 +101,7 @@ mat2 getRandomRotation(vec2 uv)
 
 float PCF(float bias)
 {
-    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    float filterRadius = 0.0004;
 
     float visibility = 0.0;
     mat2 rot = getRandomRotation(fs_in.FragPos.xy); // 随机旋转矩阵
@@ -115,7 +115,7 @@ float PCF(float bias)
     {
         vec2 rpoisson = rot * poissonDisk[i];
         // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-        float closestDepth = texture(shadowMap, projCoords.xy + rpoisson * texelSize).r;
+        float closestDepth = texture(shadowMap, projCoords.xy + rpoisson * filterRadius).r;
         visibility += (projCoords.z - bias > closestDepth + EPS) ? 0.0 : 1.0;
     }
     return visibility / SamplerNum;
@@ -130,14 +130,13 @@ vec3 CalcPointLight(vec3 normal, vec3 viewDir, vec3 diffTex, vec3 specTex)
 
     vec3 lightDir = normalize(lightPos - fs_in.FragPos);
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = diff * diffTex * 0.5;
+    vec3 diffuse = diff * diffTex;
 
     vec3 hvec = normalize(lightDir + viewDir);
     float spec = pow(max(dot(hvec, normal), 0.0), 64);
-    vec3 specular = spec * specTex * 0.3;
+    vec3 specular = spec * specTex;
 
-    // float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.02);
-    float bias = 0.0;
+    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.0005);
     return (ambient + (diffuse + specular) * PCF(bias)) * lightColor;
 }
 
@@ -149,7 +148,7 @@ void main()
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
 
     vec3 result = vec3(0.0);
-    result += CalcPointLight(normal, viewDir, diffTex, vec3(0.1));
+    result += CalcPointLight(normal, viewDir, diffTex, vec3(0.05));
 
     FragColor = vec4(result, 1.0);
     float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));

@@ -110,13 +110,13 @@ void LightComponent::EnableShadow()
             }
             case Type::Directional:
             {
-                shadowCamera->projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+                shadowCamera->projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 15.0f);
                 shadowCamera->view = glm::lookAt(position, position + direction, glm::vec3(0.0f, 1.0f, 0.0f));
                 break;
             }
             case Type::Spot:
             {
-                shadowCamera->projection = glm::perspective(glm::radians(theta), 1.0f, 0.1f, 100.0f);
+                shadowCamera->projection = glm::perspective(glm::radians(theta), 1.0f, 1.0f, 15.0f);
                 shadowCamera->view = glm::lookAt(position, position + direction, glm::vec3(0.0f, 1.0f, 0.0f));
                 break;
             }
