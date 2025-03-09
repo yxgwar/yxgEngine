@@ -28,6 +28,7 @@ public:
     static void LoadModel(std::string& path, std::vector<std::shared_ptr<MeshSlot>>& meshes, std::vector<std::shared_ptr<Material>>& materials);
 
     static void LoadShader(std::string& vertexPath, std::string& fragmentPath, std::string& geometryPath);
+    static std::shared_ptr<Shader> GetShader(const char* name);
 public:
     // 全局纹理资源池
     inline static std::unordered_map<std::string, std::shared_ptr<Texture>> TexturePool;

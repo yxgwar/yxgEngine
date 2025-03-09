@@ -17,7 +17,8 @@ enum class FBOType
     Forward,
     HDR,
     BLURH,
-    BLURV
+    BLURV,
+    gBUFFER
 };
 
 class RenderContext
@@ -34,6 +35,7 @@ public:
     void GenDepthMap(int width);
     void GenForwad(int width, int height);
     void GenHDR(int width, int height);
+    void GengBuffer(int width, int height);
 
     void GenUBO();
     void UpdateGlobalUBO(Camera* camera);

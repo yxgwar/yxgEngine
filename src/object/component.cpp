@@ -85,6 +85,38 @@ void RenderComponent::RenderDepth(glm::mat4 &lightCamera) const
     }
 }
 
+void RenderComponent::RendergBuffer() const
+{
+    if (auto transform = owner->GetComponent<TransformComponent>())
+    {
+        glm::mat4 entityMatrix = transform->GetTransformMatrix();
+        // 按材质索引分组MeshSlot
+        std::unordered_map<int, std::vector<std::shared_ptr<MeshSlot>>> materialGroups;
+        for (const auto& meshSlot : meshes)
+        {
+            int matIndex = meshSlot->materialIndex;
+            materialGroups[matIndex].emplace_back(meshSlot);
+        }
+        
+        // 遍历每个材质组
+        for (const auto& [index, meshslots] : materialGroups)
+        {
+            const auto& material = materials[index];
+
+            material->SetMatrix4("model", entityMatrix);
+            material->SetMatrix3("NormalM", glm::transpose(glm::inverse(glm::mat3(entityMatrix))));
+            
+            material->Bind(true);
+
+            // 绘制该材质下的所有MeshSlot
+            for (const auto& meshslot : meshslots)
+            {
+                meshslot->mesh->Draw();
+            }
+        }
+    }
+}
+
 void LightComponent::EnableShadow()
 {
     if(!castShadow)

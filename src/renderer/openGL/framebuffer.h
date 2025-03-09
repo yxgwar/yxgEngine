@@ -17,6 +17,7 @@ public:
     void attachDepthCube(int width, int height);
     void attachHDR(int width, int height);
     void attachPingPong(int width, int height);
+    void attachgBuffer(int width, int height);
 
     void bindTexture(int index = 0);
     void bindSingleTexture(int index);

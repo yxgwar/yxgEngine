@@ -82,6 +82,55 @@ void ForwardPass::Execute(Scene &scene, RenderContext &context)
     fbo->unbind();
 }
 
+GBufferPass::GBufferPass(RenderContext &context, int width, int height)
+{
+    context.GengBuffer(width, height);
+}
+
+void GBufferPass::Execute(Scene &scene, RenderContext &context)
+{
+    auto fbo = context.GetFBO(FBOType::gBUFFER);
+    fbo->bind();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    for(auto entity : scene.GetEntities())
+    {
+        if(auto render = entity->GetComponent<RenderComponent>())
+            render->RendergBuffer();
+    }
+    fbo->unbind();
+}
+
+void LightProcessPass::Execute(Scene &scene, RenderContext &context)
+{
+    auto fbo = context.GetFBO(FBOType::gBUFFER);
+    fbo->bindTexture();
+
+    ImGuiRenderer::imguiF->bind();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    auto shader = Import::GetShader("deffer");
+    if(shader)
+    {
+        shader->use();
+        shader->setVec3("viewPos", scene.GetCamera()->getPosition());
+        auto light = scene.GetMainLight();
+        shader->setVec3("lightPos", light->GetComponent<TransformComponent>()->position);
+        shader->setVec3("lightColor", light->GetComponent<LightComponent>()->color);
+    
+        RenderQuad::DrawwithShader(*shader);
+    
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    else
+    {
+        std::cout << "deffer shader get error!" << std::endl;
+    }
+}
+
 PostProcessPass::PostProcessPass(bool hdr)
     :m_hdr(hdr)
 {
@@ -97,37 +146,48 @@ void PostProcessPass::Execute(Scene &scene, RenderContext &context)
 
         bool horizontal = true;
         int amount = 10;
-        auto blurShader = Import::ShaderPool["blur"];
-        blurShader->use();
-        auto blurh = context.GetFBO(FBOType::BLURH);
-        auto blurv = context.GetFBO(FBOType::BLURV);
-        for (int i = 0; i <= amount; i++)
+        auto blurShader = Import::GetShader("blur");
+        if(blurShader)
         {
-            if(horizontal)
-                blurh->bind();
+            blurShader->use();
+            auto blurh = context.GetFBO(FBOType::BLURH);
+            auto blurv = context.GetFBO(FBOType::BLURV);
+            for (int i = 0; i <= amount; i++)
+            {
+                if(horizontal)
+                    blurh->bind();
+                else
+                    blurv->bind();
+                blurShader->setInt("horizontal", horizontal);
+                RenderQuad::DrawwithShader(*blurShader);
+                if(horizontal)
+                    blurh->bindTexture();
+                else
+                    blurv->bindTexture();
+                
+                horizontal = !horizontal;
+            }
+            ImGuiRenderer::imguiF->bind();
+    
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+            fbo->bindSingleTexture(0);
+            if(!horizontal)
+                blurh->bindTexture(1);
             else
-                blurv->bind();
-            blurShader->setInt("horizontal", horizontal);
-            RenderQuad::DrawwithShader(*blurShader);
-            if(horizontal)
-                blurh->bindTexture();
+                blurv->bindTexture(1);
+    
+            auto hdrShader = Import::GetShader("HDR");
+            if(hdrShader)
+                RenderQuad::DrawwithShader(*hdrShader);
             else
-                blurv->bindTexture();
-            
-            horizontal = !horizontal;
+                std::cout << "hdr shader get error!" << std::endl;
         }
-        ImGuiRenderer::imguiF->bind();
-
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        fbo->bindSingleTexture(0);
-        if(!horizontal)
-            blurh->bindTexture(1);
         else
-            blurv->bindTexture(1);
-
-        RenderQuad::DrawwithShader(*Import::ShaderPool["HDR"]);
+        {
+            std::cout << "blur shader get error!" << std::endl;
+        }
     }
     else
     {
@@ -138,7 +198,11 @@ void PostProcessPass::Execute(Scene &scene, RenderContext &context)
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        RenderQuad::DrawwithShader(*Import::ShaderPool["PostProcess"]);
+        auto postShader = Import::GetShader("PostProcess");
+        if(postShader)
+            RenderQuad::DrawwithShader(*postShader);
+        else
+            std::cout << "PostProcess shader get error!" << std::endl;
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

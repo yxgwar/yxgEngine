@@ -123,9 +123,6 @@ float PCF(float bias)
 
 vec3 CalcPointLight(vec3 normal, vec3 viewDir, vec3 diffTex, vec3 specTex)
 {
-    vec3 fragToLight = fs_in.FragPos - lightPos;
-    float fragmentDepth = length(fragToLight);
-
     vec3 ambient = 0.3 * diffTex;
 
     vec3 lightDir = normalize(lightPos - fs_in.FragPos);

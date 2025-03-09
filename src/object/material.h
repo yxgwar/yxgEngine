@@ -27,10 +27,12 @@ public:
     void SetMatrix4(const std::string& name, const glm::mat4& value);
 
     // 绑定材质（在绘制前调用）
-    void Bind() const;
+    void Bind(bool gBuffer = false) const;
 
     void AddTexture(std::shared_ptr<Texture> tex, const std::string& type, const std::string& path = std::string());
 private:
+    std::shared_ptr<Shader> gBuffershader;
+
     std::shared_ptr<Shader> m_shader;
     std::vector<TextureInfo> m_textures; // 纹理列表
 

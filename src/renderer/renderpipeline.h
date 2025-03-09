@@ -51,6 +51,20 @@ private:
     bool m_hdr;
 };
 
+class GBufferPass : public IRenderPass
+{
+public:
+    GBufferPass(RenderContext& context, int width = 1920, int height = 1080);
+
+    void Execute(Scene& scene, RenderContext& context) override;
+};
+
+class LightProcessPass: public IRenderPass
+{
+public:
+    void Execute(Scene& scene, RenderContext& context) override;
+};
+
 class PostProcessPass: public IRenderPass
 {
 public:

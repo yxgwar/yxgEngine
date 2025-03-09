@@ -8,44 +8,72 @@ std::shared_ptr<FrameBuffer> RenderContext::GetFBO(FBOType type)
 
 void RenderContext::GenDepthMap(int width)
 {
-    std::shared_ptr<FrameBuffer> fbo = std::make_shared<FrameBuffer>();
-    fbo->attachDepth(width, width);
-    fbo->bindTexture(SHADOWMAP);
-    fboPool[(int)FBOType::DepthMap] = fbo;
+    fboPool[(int)FBOType::DepthMap] = std::make_shared<FrameBuffer>();
+    fboPool[(int)FBOType::DepthMap]->attachDepth(width, width);
+    fboPool[(int)FBOType::DepthMap]->bindTexture(SHADOWMAP);
 }
 
 void RenderContext::GenForwad(int width, int height)
 {
-    std::shared_ptr<FrameBuffer> fbo = std::make_shared<FrameBuffer>();
-    fbo->attachMultiple(width, height);
-    fboPool[(int)FBOType::Forward] = fbo;
-    auto postShader = Import::ShaderPool["PostProcess"];
-    postShader->use();
-    postShader->setInt("screenTexture", 0);
-    postShader->setInt("samples", 4);
-    postShader->setVec2("textureSize", width, height);
+    fboPool[(int)FBOType::Forward] = std::make_shared<FrameBuffer>();
+    fboPool[(int)FBOType::Forward]->attachMultiple(width, height);
+    auto postShader = Import::GetShader("PostProcess");
+    if(postShader)
+    {
+        postShader->use();
+        postShader->setInt("screenTexture", 0);
+        postShader->setInt("samples", 4);
+        postShader->setVec2("textureSize", width, height);
+    }
+    else
+        std::cout << "PostProcess shader get error!" << std::endl;
 }
 
 void RenderContext::GenHDR(int width, int height)
 {
-    std::shared_ptr<FrameBuffer> fbo = std::make_shared<FrameBuffer>();
-    fbo->attachHDR(width, height);
-    fboPool[(int)FBOType::HDR] = fbo;
-    auto hdrShader = Import::ShaderPool["HDR"];
-    hdrShader->use();
-    hdrShader->setInt("scene", 0);
-    hdrShader->setInt("bloomBlur", 1);
-    hdrShader->setFloat("exposure", 1.0f);
+    fboPool[(int)FBOType::HDR] = std::make_shared<FrameBuffer>();
+    fboPool[(int)FBOType::HDR]->attachHDR(width, height);
+    
+    auto hdrShader = Import::GetShader("HDR");
+    if(hdrShader)
+    {
+        hdrShader->use();
+        hdrShader->setInt("scene", 0);
+        hdrShader->setInt("bloomBlur", 1);
+        hdrShader->setFloat("exposure", 1.0f);
+    }
+    else
+        std::cout << "hdr shader get error!" << std::endl;
 
-    std::shared_ptr<FrameBuffer> blurh = std::make_shared<FrameBuffer>();
-    blurh->attachPingPong(width, height);
-    fboPool[(int)FBOType::BLURH] = blurh;
-    std::shared_ptr<FrameBuffer> blurv = std::make_shared<FrameBuffer>();
-    blurv->attachPingPong(width, height);
-    fboPool[(int)FBOType::BLURV] = blurv;
-    auto blurShader = Import::ShaderPool["blur"];
-    blurShader->use();
-    blurShader->setInt("image", 0);
+    fboPool[(int)FBOType::BLURH] = std::make_shared<FrameBuffer>();
+    fboPool[(int)FBOType::BLURH]->attachPingPong(width, height);
+    fboPool[(int)FBOType::BLURV] = std::make_shared<FrameBuffer>();
+    fboPool[(int)FBOType::BLURV]->attachPingPong(width, height);
+    auto blurShader = Import::GetShader("blur");
+    if(blurShader)
+    {
+        blurShader->use();
+        blurShader->setInt("image", 0);
+    }
+    else
+        std::cout << "blur shader get error!" << std::endl;
+}
+
+void RenderContext::GengBuffer(int width, int height)
+{
+    fboPool[(int)FBOType::gBUFFER] = std::make_shared<FrameBuffer>();
+    fboPool[(int)FBOType::gBUFFER]->attachgBuffer(width, height);
+    
+    auto defferShader = Import::GetShader("deffer");
+    if(defferShader)
+    {
+        defferShader->use();
+        defferShader->setInt("gPosition", 0);
+        defferShader->setInt("gNormal", 1);
+        defferShader->setInt("gAlbedoSpec", 2);
+    }
+    else
+        std::cout << "deffer shader get error!" << std::endl;
 }
 
 void RenderContext::GenUBO()

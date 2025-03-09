@@ -96,6 +96,12 @@ std::shared_ptr<MeshSlot> processMesh(aiMesh *mesh, int index)
 
 void Import::GenDefault()
 {
+    // gBuffer
+    ShaderPool["gBuffer"] = std::make_shared<Shader>("../assets/shaders/gBuffer/gBuffer.vs", "../assets/shaders/gBuffer/gBuffer.fs");
+
+    // deffer light
+    ShaderPool["deffer"] = std::make_shared<Shader>("../assets/shaders/deffer/deffer.vs", "../assets/shaders/deffer/deffer.fs");
+
     // 默认渲染材质（支持简单的diffuse贴图）
     // ShaderPool["default"] = std::make_shared<Shader>("../assets/shaders/default/default.vs", "../assets/shaders/default/default.fs");
     ShaderPool["default"] = std::make_shared<Shader>("../assets/shaders/shadow/shadow.vs", "../assets/shaders/shadow/shadow.fs");
@@ -177,6 +183,14 @@ void Import::LoadShader(std::string &vertexPath, std::string &fragmentPath, std:
         else
             ShaderPool[path] = std::make_shared<Shader>(SHADERPATH + vertexPath, SHADERPATH + fragmentPath, SHADERPATH + geometryPath);
     }
+}
+
+std::shared_ptr<Shader> Import::GetShader(const char *name)
+{
+    if(ShaderPool.find(name) != ShaderPool.end())
+        return ShaderPool[name];
+    else
+        return nullptr;
 }
 
 void Import::GenStandardQuad()
