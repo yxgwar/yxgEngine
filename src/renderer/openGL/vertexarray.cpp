@@ -1,4 +1,5 @@
 #include "vertexarray.h"
+#include "glad/glad.h"
 
 VertexArray::VertexArray()
     :m_count(0), m_type(0), m_vertexCount(0)

@@ -2,10 +2,7 @@
 
 #include "openGL/framebuffer.h"
 #include "openGL/uniformbuffer.h"
-#include "glm/glm.hpp"
-#include "glm/gtc/type_ptr.hpp"
 #include "camera.h"
-#include "import/import.h"
 #include <unordered_map>
 #include <memory>
 

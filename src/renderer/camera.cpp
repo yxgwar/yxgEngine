@@ -1,4 +1,6 @@
 #include "camera.h"
+#include "input.h"
+#include "glm/gtc/matrix_transform.hpp"
 
 Camera::Camera(float width, float height, float movementSpeed, float mouseSpeed, float fov)
     :m_width(width), m_height(height), pos(0.0f, 2.0f, 5.0f), front(0.0f, 0.0f, -1.0f), up(0.0f, 1.0f, 0.0f), movementSpeed(movementSpeed), mouseSpeed(mouseSpeed), m_fov(fov), m_foucs(false)

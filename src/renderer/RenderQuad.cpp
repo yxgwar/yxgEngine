@@ -1,4 +1,5 @@
 #include "RenderQuad.h"
+#include <iostream>
 
 void RenderQuad::Init()
 {

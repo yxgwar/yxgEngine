@@ -1,11 +1,8 @@
 #pragma once
 
-#include "glad/glad.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "renderer/openGL/vertexarray.h"
-#include "renderer/openGL/indexbuffer.h"
-#include "renderer/openGL/vertexbuffer.h"
 
 struct Vertex
 {

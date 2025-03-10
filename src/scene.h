@@ -2,13 +2,11 @@
 
 #include "renderer/camera.h"
 #include "object/entity.h"
-#include "import/import.h"
 #include "renderer/renderpipeline.h"
 
 class Scene
 {
 public:
-    Scene();
     ~Scene();
 
     void Init(int width, int height);

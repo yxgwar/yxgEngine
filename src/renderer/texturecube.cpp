@@ -1,5 +1,7 @@
 #include "texturecube.h"
 #include "stb_image.h"
+#include "glad/glad.h"
+#include <iostream>
 
 TextureCube::TextureCube(std::vector<std::string>& faces)
 {

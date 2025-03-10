@@ -1,8 +1,8 @@
 #pragma once
 
-#include "log.h"
 #include "glad/glad.h"
-#include "input.h"
+#include "GLFW/glfw3.h"
+#include <string>
 
 class Window
 {

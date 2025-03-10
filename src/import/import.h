@@ -1,13 +1,6 @@
 #pragma once
 
-#include "renderer/openGL/texture.h"
-#include "renderer/openGL/shader.h"
 #include "object/material.h"
-#include "object/mesh.h"
-#include "assimp/Importer.hpp"
-#include "assimp/scene.h"
-#include "assimp/postprocess.h"
-#include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <string>

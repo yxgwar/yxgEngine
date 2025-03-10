@@ -1,4 +1,5 @@
 #include "RenderCube.h"
+#include <iostream>
 
 void RenderCube::Init()
 {

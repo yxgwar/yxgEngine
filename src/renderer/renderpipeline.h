@@ -1,8 +1,7 @@
 #pragma once
 
 #include "rendercontext.h"
-#include "RenderQuad.h"
-#include "ImGuiRenderer.h"
+
 class Scene;
 
 // 基础渲染Pass接口

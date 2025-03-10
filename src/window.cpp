@@ -1,4 +1,6 @@
 #include "window.h"
+#include "input.h"
+#include "log.h"
 
 Window::Window(int width, int height)
     :m_aspect(float(width) / height), m_width(width), m_height(height)

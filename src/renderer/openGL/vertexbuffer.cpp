@@ -1,4 +1,5 @@
 #include "vertexbuffer.h"
+#include "glad/glad.h"
 
 VertexBuffer::VertexBuffer(float* vertices, size_t size)
 {

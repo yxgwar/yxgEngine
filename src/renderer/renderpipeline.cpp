@@ -1,5 +1,9 @@
 #include "renderpipeline.h"
 #include "scene.h"
+#include "RenderQuad.h"
+#include "ImGuiRenderer.h"
+#include "import/import.h"
+#include <iostream>
 
 void RenderPipeline::AddPass(std::unique_ptr<IRenderPass> pass)
 {

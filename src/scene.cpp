@@ -1,9 +1,5 @@
 #include "scene.h"
-
-Scene::Scene()
-{
-    
-}
+#include "import/import.h"
 
 Scene::~Scene()
 {

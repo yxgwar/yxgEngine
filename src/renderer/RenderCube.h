@@ -1,6 +1,5 @@
 #pragma once
 
-#include "glad/glad.h"
 #include "openGL/vertexarray.h"
 #include "openGL/vertexbuffer.h"
 #include "openGL/indexbuffer.h"

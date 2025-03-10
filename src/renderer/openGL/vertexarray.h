@@ -1,11 +1,8 @@
 #pragma once
 
-#include "glad/glad.h"
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
-
 #include <vector>
-#include <iostream>
 
 struct VertexAttribute
 {

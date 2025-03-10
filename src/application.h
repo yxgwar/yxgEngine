@@ -1,9 +1,6 @@
 #pragma once
 
 #include "window.h"
-#include "renderer/RenderQuad.h"
-#include "renderer/ImGuiRenderer.h"
-#include "renderer/rendercontext.h"
 #include "renderer/renderpipeline.h"
 #include "scene.h"
 

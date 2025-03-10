@@ -1,5 +1,6 @@
 #include "component.h"
 #include "entity.h"
+#include "import/import.h"
 
 void TransformComponent::SetRotation(float radius, glm::vec3 direction)
 {

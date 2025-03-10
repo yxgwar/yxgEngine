@@ -1,4 +1,5 @@
 #include "indexbuffer.h"
+#include "glad/glad.h"
 
 IndexBuffer::IndexBuffer(unsigned int *indices, size_t size)
 {

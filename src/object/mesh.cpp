@@ -1,4 +1,5 @@
 #include "mesh.h"
+#include "glad/glad.h"
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
     :VBO((float*)&vertices[0], vertices.size() * sizeof(Vertex)),

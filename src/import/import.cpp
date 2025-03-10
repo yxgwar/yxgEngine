@@ -1,6 +1,13 @@
 #include "import.h"
 #include "object/component.h"
 
+#include "assimp/Importer.hpp"
+#include "assimp/scene.h"
+#include "assimp/postprocess.h"
+
+#include <map>
+#include <iostream>
+
 void loadMatTexture(aiMaterial* aiMat, std::shared_ptr<Material> mat, std::string& path)
 {
     // 定义纹理类型映射
