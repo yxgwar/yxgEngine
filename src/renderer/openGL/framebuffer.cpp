@@ -196,18 +196,28 @@ void FrameBuffer::attachgBuffer(int width, int height)
     bind();
     unsigned int texColorBuffer[3];
     glGenTextures(3, texColorBuffer);
-    for (unsigned int i = 0; i < 2; i++)
-    {
-        m_texColorBuffers.emplace_back(texColorBuffer[i]);
-        glBindTexture(GL_TEXTURE_2D, texColorBuffer[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glBindTexture(GL_TEXTURE_2D, 0);
+
+    // gPosition and gShadow
+    m_texColorBuffers.emplace_back(texColorBuffer[0]);
+    glBindTexture(GL_TEXTURE_2D, texColorBuffer[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer[0], 0);
+
+    // gNormal
+    m_texColorBuffers.emplace_back(texColorBuffer[1]);
+    glBindTexture(GL_TEXTURE_2D, texColorBuffer[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texColorBuffer[1], 0);
     
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, texColorBuffer[i], 0);
-    }
-    
+    // gAlbedo
     m_texColorBuffers.emplace_back(texColorBuffer[2]);
     glBindTexture(GL_TEXTURE_2D, texColorBuffer[2]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);

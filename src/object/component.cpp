@@ -85,7 +85,7 @@ void RenderComponent::RenderDepth(glm::mat4 &lightCamera) const
     }
 }
 
-void RenderComponent::RendergBuffer() const
+void RenderComponent::RendergBuffer(glm::mat4 &lightCamera, Entity* light) const
 {
     if (auto transform = owner->GetComponent<TransformComponent>())
     {
@@ -98,6 +98,8 @@ void RenderComponent::RendergBuffer() const
             materialGroups[matIndex].emplace_back(meshSlot);
         }
         
+        auto rc = light->GetComponent<TransformComponent>();
+
         // 遍历每个材质组
         for (const auto& [index, meshslots] : materialGroups)
         {
@@ -105,6 +107,8 @@ void RenderComponent::RendergBuffer() const
 
             material->SetMatrix4("model", entityMatrix);
             material->SetMatrix3("NormalM", glm::transpose(glm::inverse(glm::mat3(entityMatrix))));
+            material->SetMatrix4("lightSpaceMatrix", lightCamera);
+            material->SetVector3("lightPos", rc->position);
             
             material->Bind(true);
 

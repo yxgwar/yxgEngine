@@ -95,10 +95,14 @@ void GBufferPass::Execute(Scene &scene, RenderContext &context)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    auto light = scene.GetMainLight();
+    auto lc = light->GetComponent<CameraComponent>();
+    glm::mat4 vp = lc->projection * std::get<glm::mat4>(lc->view);
+
     for(auto entity : scene.GetEntities())
     {
         if(auto render = entity->GetComponent<RenderComponent>())
-            render->RendergBuffer();
+            render->RendergBuffer(vp, light);
     }
     fbo->unbind();
 }
