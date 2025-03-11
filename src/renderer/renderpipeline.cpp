@@ -100,9 +100,12 @@ void GBufferPass::Execute(Scene &scene, RenderContext &context)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto light = scene.GetMainLight();
-    auto lc = light->GetComponent<CameraComponent>();
-    glm::mat4 vp = lc->projection * std::get<glm::mat4>(lc->view);
-
+    glm::mat4 vp = glm::mat4(1.0f);
+    if(light)
+    {
+        auto lc = light->GetComponent<CameraComponent>();
+        vp = lc->projection * std::get<glm::mat4>(lc->view);
+    }
     for(auto entity : scene.GetEntities())
     {
         if(auto render = entity->GetComponent<RenderComponent>())
@@ -125,6 +128,7 @@ void LightProcessPass::Execute(Scene &scene, RenderContext &context)
     {
         shader->use();
         shader->setVec3("viewPos", scene.GetCamera()->getPosition());
+        // TODO:修改为从光源列表中获得
         auto light = scene.GetMainLight();
         shader->setVec3("lightPos", light->GetComponent<TransformComponent>()->position);
         shader->setVec3("lightColor", light->GetComponent<LightComponent>()->color);
