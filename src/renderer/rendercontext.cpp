@@ -43,7 +43,7 @@ void RenderContext::GenHDR(int width, int height)
         hdrShader->use();
         hdrShader->setInt("scene", 0);
         hdrShader->setInt("bloomBlur", 1);
-        hdrShader->setFloat("exposure", 1.0f);
+        hdrShader->setFloat("exposure", 0.8f);
     }
     else
         std::cout << "hdr shader get error!" << std::endl;
