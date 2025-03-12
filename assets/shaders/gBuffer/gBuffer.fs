@@ -1,10 +1,12 @@
 #version 460 core
-layout (location = 0) out vec4 gPosition;
+layout (location = 0) out vec3 gPosition;
 layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec4 gAlbedoSpec;
+layout (location = 3) out float gShadow;
 
 in vec2 TexCoords;
 in vec3 FragPos;
+in vec3 WorldPos;
 in vec3 Normal;
 in vec4 FragPosLightSpace;
 
@@ -120,14 +122,15 @@ float PCF(float bias)
 void main()
 {    
     // Store the fragment position vector in the first gbuffer texture
-    gPosition.xyz = FragPos;
+    gPosition = FragPos;
     // Also store the per-fragment normals into the gbuffer
     gNormal = normalize(Normal);
-    vec3 lightDir = normalize(lightPos - FragPos);
+    vec3 lightDir = normalize(lightPos - WorldPos);
     float bias = max(0.005 * (1.0 - dot(gNormal, lightDir)), 0.0005);
-    gPosition.w = PCF(bias);
+    gShadow = PCF(bias);
     // And the diffuse per-fragment color
     gAlbedoSpec.rgb = texture(texture_diffuse, TexCoords).rgb;
+    // gAlbedoSpec.rgb = vec3(0.95);
     // Store specular intensity in gAlbedoSpec's alpha component
     // gAlbedoSpec.a = texture(texture_specular, TexCoords).r;
     gAlbedoSpec.a = 0.05;

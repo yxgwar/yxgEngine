@@ -2,6 +2,7 @@
 
 #include "openGL/framebuffer.h"
 #include "openGL/uniformbuffer.h"
+#include "openGl/texture.h"
 #include "camera.h"
 #include <unordered_map>
 #include <memory>
@@ -15,7 +16,9 @@ enum class FBOType
     HDR,
     BLURH,
     BLURV,
-    gBUFFER
+    gBUFFER,
+    SSAO,
+    SSAOblur
 };
 
 class RenderContext
@@ -33,6 +36,7 @@ public:
     void GenForwad(int width, int height);
     void GenHDR(int width, int height);
     void GengBuffer(int width, int height);
+    void GenSSAO(int width, int height, void* noise);
 
     void GenUBO();
     void UpdateGlobalUBO(Camera* camera);
@@ -48,4 +52,5 @@ private:
     std::unordered_map<int, std::shared_ptr<FrameBuffer>> fboPool;
 
     std::unique_ptr<UniformBuffer> cameraUBO;
+    std::unique_ptr<Texture> noiseTex;
 };

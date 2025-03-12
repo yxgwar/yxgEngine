@@ -86,7 +86,7 @@ void RenderComponent::RenderDepth(glm::mat4 &lightCamera) const
     }
 }
 
-void RenderComponent::RendergBuffer(glm::mat4 &lightCamera, Entity* light) const
+void RenderComponent::RendergBuffer(Camera &camera, glm::mat4 &lightCamera, Entity* light) const
 {
     if (auto transform = owner->GetComponent<TransformComponent>())
     {
@@ -107,7 +107,7 @@ void RenderComponent::RendergBuffer(glm::mat4 &lightCamera, Entity* light) const
             const auto& material = materials[index];
 
             material->SetMatrix4("model", entityMatrix);
-            material->SetMatrix3("NormalM", glm::transpose(glm::inverse(glm::mat3(entityMatrix))));
+            material->SetMatrix3("NormalM", glm::transpose(glm::inverse(glm::mat3(camera.getView() * entityMatrix))));
             material->SetMatrix4("lightSpaceMatrix", lightCamera);
             material->SetVector3("lightPos", rc->position);
             

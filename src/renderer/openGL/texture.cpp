@@ -8,14 +8,6 @@ Texture::Texture(const std::string& path)
     load(path.c_str());
 }
 
-Texture::Texture(const std::string &directory, const std::string& path, std::string &type)
-    : m_type(type), m_path(path)
-{
-    std::string filename = path;
-    filename = directory + '/' + filename;
-    load(filename.c_str());
-}
-
 Texture::Texture()
 {
     unsigned char data[] = {255, 255, 255, 255}; // RGBA
@@ -30,6 +22,18 @@ Texture::Texture()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+}
+
+Texture::Texture(int width, int height, void *data)
+{
+    glGenTextures(1, &ID);
+    glBindTexture(GL_TEXTURE_2D, ID);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
 }
 
 Texture::~Texture()

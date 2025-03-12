@@ -51,7 +51,7 @@ public:
 
     void Render(Camera& camera, Entity* light) const;
     void RenderDepth(glm::mat4& lightCamera) const;
-    void RendergBuffer(glm::mat4 &lightCamera, Entity* light) const;
+    void RendergBuffer(Camera &camera, glm::mat4 &lightCamera, Entity* light) const;
 };
 
 // 摄像机

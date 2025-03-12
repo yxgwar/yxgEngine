@@ -5,12 +5,13 @@ in vec2 TexCoords;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
+uniform sampler2D gShadow;
+uniform sampler2D ssao;
 
 uniform vec3 lightPos;
 uniform vec3 lightColor;
-uniform vec3 viewPos;
 
-vec3 CalcPointLight(vec3 normal, vec3 viewDir, vec3 diffTex, float specTex, vec3 FragPos, float shadow)
+vec3 CalcPointLight(vec3 normal, vec3 viewDir, vec3 diffTex, float specTex, vec3 FragPos, float shadow, float ambientOcclusion)
 {
     vec3 ambient = 0.3 * diffTex;
 
@@ -22,22 +23,23 @@ vec3 CalcPointLight(vec3 normal, vec3 viewDir, vec3 diffTex, float specTex, vec3
     float spec = pow(max(dot(hvec, normal), 0.0), 64);
     float specular = spec * specTex;
 
-    return (ambient + (diffuse + specular) * shadow) * lightColor;
+    return (ambient * ambientOcclusion + (diffuse + specular) * shadow) * lightColor;
 }
 
 void main()
 {
     // Retrieve data from gbuffer
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
-    float shadow = texture(gPosition, TexCoords).a;
     vec3 normal = texture(gNormal, TexCoords).rgb;
     vec3 diffTex = texture(gAlbedoSpec, TexCoords).rgb;
     float specTex = texture(gAlbedoSpec, TexCoords).a;
+    float shadow = texture(gShadow, TexCoords).r;
+    float ambientOcclusion = texture(ssao, TexCoords).r;
 
-    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 viewDir = normalize(-FragPos);
 
     vec3 result = vec3(0.0);
-    result += CalcPointLight(normal, viewDir, diffTex, specTex, FragPos, shadow);
+    result += CalcPointLight(normal, viewDir, diffTex, specTex, FragPos, shadow, ambientOcclusion);
 
     const float gamma = 2.2;
     result = pow(result, vec3(1.0 / gamma));

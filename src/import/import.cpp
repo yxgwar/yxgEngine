@@ -128,6 +128,10 @@ void Import::GenDefault()
     ShaderPool["PostProcess"] = std::make_shared<Shader>("../assets/shaders/PostProcess/PostProcess.vs", "../assets/shaders/PostProcess/PostProcess.fs");
     ShaderPool["HDR"] = std::make_shared<Shader>("../assets/shaders/HDR/hdr.vs", "../assets/shaders/HDR/hdr.fs");
     ShaderPool["blur"] = std::make_shared<Shader>("../assets/shaders/HDR/blur.vs", "../assets/shaders/HDR/blur.fs");
+
+    // ssao
+    ShaderPool["ssao"] = std::make_shared<Shader>("../assets/shaders/ssao/ssao.vs", "../assets/shaders/ssao/ssao.fs");
+    ShaderPool["ssaoblur"] = std::make_shared<Shader>("../assets/shaders/ssao/ssao.vs", "../assets/shaders/ssao/ssaoblur.fs");
 }
 
 std::shared_ptr<Texture> Import::LoadTexture(std::string &path)

@@ -24,6 +24,7 @@ private:
     std::vector<std::unique_ptr<IRenderPass>> m_passes;
 };
 
+// 预处理，创建相关实例
 class PrePass: public IRenderPass
 {
 public:
@@ -32,6 +33,7 @@ public:
     void Execute(Scene& scene, RenderContext& context) override {}
 };
 
+// 阴影映射
 class ShadowMapPass : public IRenderPass
 {
 public:
@@ -40,6 +42,7 @@ public:
     void Execute(Scene& scene, RenderContext& context) override;
 };
 
+// 前向渲染
 class ForwardPass: public IRenderPass
 {
 public:
@@ -50,6 +53,7 @@ private:
     bool m_hdr;
 };
 
+// gBuffer
 class GBufferPass : public IRenderPass
 {
 public:
@@ -58,12 +62,14 @@ public:
     void Execute(Scene& scene, RenderContext& context) override;
 };
 
+// 延迟渲染的光照环节
 class LightProcessPass: public IRenderPass
 {
 public:
     void Execute(Scene& scene, RenderContext& context) override;
 };
 
+// 后处理
 class PostProcessPass: public IRenderPass
 {
 public:
@@ -72,4 +78,12 @@ public:
     void Execute(Scene& scene, RenderContext& context) override;
 private:
     bool m_hdr;
+};
+
+class SSAOPass: public IRenderPass
+{
+public:
+    SSAOPass(RenderContext& context, int width = 1920, int height = 1080);
+
+    void Execute(Scene& scene, RenderContext& context) override;
 };

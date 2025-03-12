@@ -8,14 +8,15 @@ public:
     FrameBuffer();
     ~FrameBuffer();
 
-    void attachColor(int width, int height);
-    void attachDepthStencil(int width, int height);
-    void attachDepth(int width, int height);
-    void attachMultiple(int width, int height);
-    void attachDepthCube(int width, int height);
-    void attachHDR(int width, int height);
-    void attachPingPong(int width, int height);
-    void attachgBuffer(int width, int height);
+    void attachColor        (int width, int height);
+    void attachDepthStencil (int width, int height);
+    void attachDepth        (int width, int height);
+    void attachMultiple     (int width, int height);
+    void attachDepthCube    (int width, int height);
+    void attachHDR          (int width, int height);
+    void attachPingPong     (int width, int height);
+    void attachgBuffer      (int width, int height);
+    void attachSingle       (int width, int height);
 
     void bindTexture(int index = 0);
     void bindSingleTexture(int index);

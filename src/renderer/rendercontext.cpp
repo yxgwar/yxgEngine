@@ -74,9 +74,42 @@ void RenderContext::GengBuffer(int width, int height)
         defferShader->setInt("gPosition", 0);
         defferShader->setInt("gNormal", 1);
         defferShader->setInt("gAlbedoSpec", 2);
+        defferShader->setInt("gShadow", 3);
+        defferShader->setInt("ssao", 4);
     }
     else
         std::cout << "deffer shader get error!" << std::endl;
+}
+
+void RenderContext::GenSSAO(int width, int height, void* noise)
+{
+    noiseTex = std::make_unique<Texture>(4, 4, noise);
+
+    fboPool[(int)FBOType::SSAO] = std::make_shared<FrameBuffer>();
+    fboPool[(int)FBOType::SSAO]->attachSingle(width, height);
+
+    auto ssaoShader = Import::GetShader("ssao");
+    if(ssaoShader)
+    {
+        ssaoShader->use();
+        ssaoShader->setInt("gPosition", 0);
+        ssaoShader->setInt("gNormal", 1);
+        ssaoShader->setInt("texNoise", 2);
+    }
+    else
+        std::cout << "ssao shader get error!" << std::endl;
+    
+    fboPool[(int)FBOType::SSAOblur] = std::make_shared<FrameBuffer>();
+    fboPool[(int)FBOType::SSAOblur]->attachSingle(width, height);
+
+    auto ssaoblurShader = Import::GetShader("ssaoblur");
+    if(ssaoblurShader)
+    {
+        ssaoblurShader->use();
+        ssaoblurShader->setInt("ssaoInput", 0);
+    }
+    else
+        std::cout << "ssaoblur shader get error!" << std::endl;
 }
 
 void RenderContext::GenUBO()

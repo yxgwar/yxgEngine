@@ -23,10 +23,11 @@ Application::Application(int width, int height)
     bool hdr = true;
     m_renderPipeline.AddPass(std::make_unique<PrePass>(renderContext));
     m_renderPipeline.AddPass(std::make_unique<ShadowMapPass>(renderContext));
-    m_renderPipeline.AddPass(std::make_unique<ForwardPass>(renderContext, hdr, m_width, m_height));
-    m_renderPipeline.AddPass(std::make_unique<PostProcessPass>(hdr));
-    // m_renderPipeline.AddPass(std::make_unique<GBufferPass>(renderContext, m_width, m_height));
-    // m_renderPipeline.AddPass(std::make_unique<LightProcessPass>());
+    // m_renderPipeline.AddPass(std::make_unique<ForwardPass>(renderContext, hdr, m_width, m_height));
+    // m_renderPipeline.AddPass(std::make_unique<PostProcessPass>(hdr));
+    m_renderPipeline.AddPass(std::make_unique<GBufferPass>(renderContext, m_width, m_height));
+    m_renderPipeline.AddPass(std::make_unique<SSAOPass>(renderContext, m_width, m_width));
+    m_renderPipeline.AddPass(std::make_unique<LightProcessPass>());
 }
 
 void Application::Run()

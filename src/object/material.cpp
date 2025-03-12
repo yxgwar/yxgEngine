@@ -1,10 +1,13 @@
 #include "material.h"
 #include "import/import.h"
+#include <iostream>
 
 Material::Material(std::shared_ptr<Shader> shader)
     :m_shader(shader)
 {
     gBuffershader = Import::GetShader("gBuffer");
+    if(!gBuffershader)
+        std::cout << "gBuffer shader uninitialized!" << std::endl;
 }
 
 void Material::SetInt(const std::string &name, int value)

@@ -4,6 +4,12 @@
 #include "ImGuiRenderer.h"
 #include "import/import.h"
 #include <iostream>
+#include <random>
+
+float lerp(float a, float b, float f)
+{
+    return a + f * (b - a);
+}
 
 void RenderPipeline::AddPass(std::unique_ptr<IRenderPass> pass)
 {
@@ -100,6 +106,7 @@ void GBufferPass::Execute(Scene &scene, RenderContext &context)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto light = scene.GetMainLight();
+    auto camera = scene.GetCamera();
     glm::mat4 vp = glm::mat4(1.0f);
     if(light)
     {
@@ -109,15 +116,18 @@ void GBufferPass::Execute(Scene &scene, RenderContext &context)
     for(auto entity : scene.GetEntities())
     {
         if(auto render = entity->GetComponent<RenderComponent>())
-            render->RendergBuffer(vp, light);
+            render->RendergBuffer(*camera, vp, light);
     }
     fbo->unbind();
 }
 
 void LightProcessPass::Execute(Scene &scene, RenderContext &context)
 {
-    auto fbo = context.GetFBO(FBOType::gBUFFER);
-    fbo->bindTexture();
+    auto gBuffer = context.GetFBO(FBOType::gBUFFER);
+    gBuffer->bindTexture();
+
+    auto ssao = context.GetFBO(FBOType::SSAOblur);
+    ssao->bindTexture(4);
 
     ImGuiRenderer::imguiF->bind();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -127,20 +137,18 @@ void LightProcessPass::Execute(Scene &scene, RenderContext &context)
     if(shader)
     {
         shader->use();
-        shader->setVec3("viewPos", scene.GetCamera()->getPosition());
         // TODO:修改为从光源列表中获得
         auto light = scene.GetMainLight();
-        shader->setVec3("lightPos", light->GetComponent<TransformComponent>()->position);
+        shader->setVec3("lightPos", scene.GetCamera()->getView() * glm::vec4(light->GetComponent<TransformComponent>()->position, 1.0f));
         shader->setVec3("lightColor", light->GetComponent<LightComponent>()->color);
     
         RenderQuad::DrawwithShader(*shader);
-    
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     else
     {
         std::cout << "deffer shader get error!" << std::endl;
     }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 PostProcessPass::PostProcessPass(bool hdr)
@@ -217,4 +225,84 @@ void PostProcessPass::Execute(Scene &scene, RenderContext &context)
             std::cout << "PostProcess shader get error!" << std::endl;
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+SSAOPass::SSAOPass(RenderContext& context, int width, int height)
+{
+    // Sample kernel
+    std::random_device rd;
+    std::default_random_engine gen(rd());
+    std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // generates random floats between 0.0 and 1.0
+    std::vector<glm::vec3> ssaoKernel;
+    for (GLuint i = 0; i < 64; ++i)
+    {
+        glm::vec3 sample(randomFloats(gen) * 2.0 - 1.0, randomFloats(gen) * 2.0 - 1.0, randomFloats(gen));
+        sample = glm::normalize(sample);
+        sample *= randomFloats(gen);
+        GLfloat scale = GLfloat(i) / 64.0;
+
+        // Scale samples s.t. they're more aligned to center of kernel
+        scale = lerp(0.1f, 1.0f, scale * scale);
+        sample *= scale;
+        ssaoKernel.push_back(sample);
+    }
+
+    auto shader = Import::GetShader("ssao");
+    if(shader)
+    {
+        shader->use();
+        for (GLuint i = 0; i < 64; ++i)
+            shader->setVec3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
+        shader->setVec2("screenSize", width, height);
+    }
+    else
+        std::cout << "ssao shader get error!" << std::endl;
+
+    // Noise texture
+    std::vector<glm::vec3> ssaoNoise;
+    for (GLuint i = 0; i < 16; i++)
+    {
+        glm::vec3 noise(randomFloats(gen) * 2.0 - 1.0, randomFloats(gen) * 2.0 - 1.0, 0.0f); // rotate around z-axis (in tangent space)
+        ssaoNoise.push_back(noise);
+    }
+
+    context.GenSSAO(width, height, (void*)&ssaoNoise[0]);
+}
+
+void SSAOPass::Execute(Scene &scene, RenderContext &context)
+{
+    auto gBuffer = context.GetFBO(FBOType::gBUFFER);
+    gBuffer->bindTexture();
+
+    auto ssao = context.GetFBO(FBOType::SSAO);
+    ssao->bind();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    auto shader = Import::GetShader("ssao");
+    if(shader)
+    {
+        shader->use();
+        shader->setMat4("projection", scene.GetCamera()->getProjection());
+        RenderQuad::DrawwithShader(*shader);
+    }
+    else
+        std::cout << "ssao shader get error!" << std::endl;
+    
+    ssao->bindTexture();
+    auto ssaoblur = context.GetFBO(FBOType::SSAOblur);
+    ssaoblur->bind();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    shader = Import::GetShader("ssaoblur");
+    if(shader)
+    {
+        shader->use();
+        RenderQuad::DrawwithShader(*shader);
+    }
+    else
+        std::cout << "ssao shader get error!" << std::endl;
 }
