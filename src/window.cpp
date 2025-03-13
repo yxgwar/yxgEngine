@@ -25,6 +25,7 @@ Window::Window(int width, int height)
         throw std::runtime_error("Failed to initialize GLAD");
     }
     glViewport(0, 0, width, height);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
 }
 

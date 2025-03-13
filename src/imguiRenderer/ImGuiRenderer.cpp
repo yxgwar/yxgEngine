@@ -4,7 +4,7 @@
 #include "imgui_impl_opengl3.h"
 #include "renderer/rendercontext.h"
 
-void ImGuiRenderer::Init(Window &window)
+void ImGuiRenderer::Init(Window &window, RenderPipeline& rp)
 {
     m_width = window.GetWidth();
     m_height = window.GetHeight();
@@ -29,6 +29,8 @@ void ImGuiRenderer::Init(Window &window)
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
     ImGui_ImplOpenGL3_Init("#version 460");
+
+    m_renderPipeline = &rp;
 }
 
 void ImGuiRenderer::OnUpdate()
@@ -122,11 +124,41 @@ void ImGuiRenderer::DrawGlobal()
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 
-    RenderContext& renderContext = RenderContext::GetInstance();
+    // 下拉菜单选项（顺序必须与枚举定义一致）
+    const char* modes[] = { "Forward", "Deferred" };
 
-    bool ssao = renderContext.GetSSAO();
-    ImGui::Checkbox("ssao", &ssao);
-    renderContext.SetSSAO(ssao);
+    // 将当前模式转换为整数索引
+    RenderMode current_mode = m_renderPipeline->GetRenderMode();
+    int current_mode_index = static_cast<int>(current_mode);
+    
+    // 创建下拉菜单
+    if (ImGui::Combo("Render Mode", &current_mode_index, modes, IM_ARRAYSIZE(modes)))
+    {
+        // 当选择发生变化时更新模式
+        current_mode = static_cast<RenderMode>(current_mode_index);
+        m_renderPipeline->SetRenderMode(current_mode);
+    }
+
+    if (current_mode == RenderMode::Deferred)
+    {
+        // 这个复选框只在Deferred模式下显示
+        ImGui::Spacing(); // 添加间隔使UI更美观
+        ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.4f, 1.0f), "Deferred Rendering Settings");
+        ImGui::Separator(); // 添加分隔线
+
+        RenderContext& renderContext = RenderContext::GetInstance();
+    
+        bool ssao_enabled = renderContext.GetSSAO();
+        ImGui::Checkbox("Enable SSAO", &ssao_enabled);
+        renderContext.SetSSAO(ssao_enabled);
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("屏幕空间环境光遮蔽\n【仅延迟渲染有效】");
+        }
+    }
+
     ImGui::End();
 }
 

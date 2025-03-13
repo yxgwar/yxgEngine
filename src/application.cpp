@@ -19,15 +19,15 @@ Application::Application(int width, int height)
 
     RenderContext& renderContext = RenderContext::GetInstance();
     bool hdr = true;
-    m_renderPipeline.AddPass(std::make_unique<PrePass>(renderContext));
-    m_renderPipeline.AddPass(std::make_unique<ShadowMapPass>(renderContext));
-    // m_renderPipeline.AddPass(std::make_unique<ForwardPass>(renderContext, hdr, m_width, m_height));
-    // m_renderPipeline.AddPass(std::make_unique<PostProcessPass>(hdr));
-    m_renderPipeline.AddPass(std::make_unique<GBufferPass>(renderContext, m_width, m_height));
-    m_renderPipeline.AddPass(std::make_unique<SSAOPass>(renderContext, m_width, m_width));
-    m_renderPipeline.AddPass(std::make_unique<LightProcessPass>());
+    m_renderPipeline.AddCommonPass(std::make_unique<PrePass>(renderContext));
+    m_renderPipeline.AddCommonPass(std::make_unique<ShadowMapPass>(renderContext));
+    m_renderPipeline.AddForwardPass(std::make_unique<ForwardPass>(renderContext, hdr, m_width, m_height));
+    m_renderPipeline.AddForwardPass(std::make_unique<PostProcessPass>(hdr));
+    m_renderPipeline.AddDeferredPass(std::make_unique<GBufferPass>(renderContext, m_width, m_height));
+    m_renderPipeline.AddDeferredPass(std::make_unique<SSAOPass>(renderContext, m_width, m_width));
+    m_renderPipeline.AddDeferredPass(std::make_unique<LightProcessPass>());
     
-    ImGuiRenderer::Init(m_window);
+    ImGuiRenderer::Init(m_window, m_renderPipeline);
 }
 
 void Application::Run()

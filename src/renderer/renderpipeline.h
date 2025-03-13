@@ -12,16 +12,31 @@ public:
     virtual ~IRenderPass() = default;
 };
 
+// 定义渲染模式枚举
+enum class RenderMode
+{
+    Forward,
+    Deferred
+};
+
 // 渲染管线管理器
 class RenderPipeline
 {
 public:
-    void AddPass(std::unique_ptr<IRenderPass> pass);
+    void AddCommonPass(std::unique_ptr<IRenderPass> pass)   {m_commonPasses.emplace_back(std::move(pass));}
+    void AddForwardPass(std::unique_ptr<IRenderPass> pass)  {m_forwardPasses.emplace_back(std::move(pass));}
+    void AddDeferredPass(std::unique_ptr<IRenderPass> pass) {m_deferredPasses.emplace_back(std::move(pass));}
     void Execute(Scene& scene, RenderContext& context);
 
     void UpdateGlobalUBO(Camera* camera, RenderContext& context);
+
+    RenderMode GetRenderMode() { return m_currentMode; }
+    void SetRenderMode(RenderMode mode) { m_currentMode = mode;}
 private:
-    std::vector<std::unique_ptr<IRenderPass>> m_passes;
+    std::vector<std::unique_ptr<IRenderPass>> m_commonPasses;   // 公共Pass
+    std::vector<std::unique_ptr<IRenderPass>> m_forwardPasses;  // 正向专用
+    std::vector<std::unique_ptr<IRenderPass>> m_deferredPasses; // 延迟专用
+    RenderMode m_currentMode = RenderMode::Deferred;
 };
 
 // 预处理，创建相关实例

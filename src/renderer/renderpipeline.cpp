@@ -11,17 +11,15 @@ float lerp(float a, float b, float f)
     return a + f * (b - a);
 }
 
-void RenderPipeline::AddPass(std::unique_ptr<IRenderPass> pass)
+void RenderPipeline::Execute(Scene &scene, RenderContext &context)
 {
-    m_passes.emplace_back(std::move(pass));
-}
-
-void RenderPipeline::Execute(Scene &scene, RenderContext& context)
-{
-    for(auto& pass : m_passes) 
-    {
+    for(auto& pass : m_commonPasses) 
         pass->Execute(scene, context);
-    }
+
+    // 根据模式选择专用Pass
+    auto& activePasses = (m_currentMode == RenderMode::Forward) ? m_forwardPasses : m_deferredPasses;
+    for (auto& pass : activePasses)
+        pass->Execute(scene, context);
 }
 
 void RenderPipeline::UpdateGlobalUBO(Camera *camera, RenderContext& context)
@@ -77,7 +75,6 @@ void ForwardPass::Execute(Scene &scene, RenderContext &context)
         fbo = context.GetFBO(FBOType::Forward);
     fbo->bind();
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     auto camera = scene.GetCamera();
@@ -102,7 +99,6 @@ void GBufferPass::Execute(Scene &scene, RenderContext &context)
     auto fbo = context.GetFBO(FBOType::gBUFFER);
     fbo->bind();
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto light = scene.GetMainLight();
@@ -126,14 +122,7 @@ void LightProcessPass::Execute(Scene &scene, RenderContext &context)
     auto gBuffer = context.GetFBO(FBOType::gBUFFER);
     gBuffer->bindTexture();
 
-    if(context.GetSSAO())
-    {
-        auto ssao = context.GetFBO(FBOType::SSAOblur);
-        ssao->bindTexture(4);
-    }
-
     ImGuiRenderer::imguiF->bind();
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto shader = Import::GetShader("deffer");
@@ -194,7 +183,6 @@ void PostProcessPass::Execute(Scene &scene, RenderContext &context)
             }
             ImGuiRenderer::imguiF->bind();
     
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
             fbo->bindSingleTexture(0);
@@ -220,7 +208,6 @@ void PostProcessPass::Execute(Scene &scene, RenderContext &context)
         fbo->bindTexture();
         ImGuiRenderer::imguiF->bind();
 
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         auto postShader = Import::GetShader("PostProcess");
@@ -278,13 +265,13 @@ void SSAOPass::Execute(Scene &scene, RenderContext &context)
 {
     if(context.GetSSAO())
     {
+        // 生成SSAO
         auto gBuffer = context.GetFBO(FBOType::gBUFFER);
         gBuffer->bindTexture();
     
         auto ssao = context.GetFBO(FBOType::SSAO);
         ssao->bind();
     
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
         auto shader = Import::GetShader("ssao");
@@ -297,6 +284,7 @@ void SSAOPass::Execute(Scene &scene, RenderContext &context)
         else
             std::cout << "ssao shader get error!" << std::endl;
         
+        // 模糊SSAO
         ssao->bindTexture();
         auto ssaoblur = context.GetFBO(FBOType::SSAOblur);
         ssaoblur->bind();
@@ -312,5 +300,8 @@ void SSAOPass::Execute(Scene &scene, RenderContext &context)
         }
         else
             std::cout << "ssao shader get error!" << std::endl;
+        
+        ssaoblur->unbind();
+        ssaoblur->bindTexture(4);
     }
 }
