@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "renderer/rendercontext.h"
 
 void ImGuiRenderer::Init(Window &window)
 {
@@ -28,6 +29,15 @@ void ImGuiRenderer::Init(Window &window)
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
     ImGui_ImplOpenGL3_Init("#version 460");
+}
+
+void ImGuiRenderer::OnUpdate()
+{
+    Begin();
+
+    DrawGlobal();
+
+    End();
 }
 
 void ImGuiRenderer::Begin()
@@ -106,21 +116,23 @@ void ImGuiRenderer::End()
     }
 }
 
+void ImGuiRenderer::DrawGlobal()
+{
+    ImGui::Begin("global param");
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+
+    RenderContext& renderContext = RenderContext::GetInstance();
+
+    bool ssao = renderContext.GetSSAO();
+    ImGui::Checkbox("ssao", &ssao);
+    renderContext.SetSSAO(ssao);
+    ImGui::End();
+}
+
 void ImGuiRenderer::Destroy()
 {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
-// ImGuiRenderer::Begin();
-// {
-//     ImGui::Begin("Hello, world!");
-//     ImGuiIO& io = ImGui::GetIO(); (void)io;
-//     ImGui::Text("This is some useful text.");
-//     ImGui::DragFloat("X", &lightP.x, 0.1f, 0.0f, 0.0f, "%.2f");
-//     ImGui::DragFloat("Y", &lightP.y, 0.1f, 0.0f, 0.0f, "%.2f");
-//     ImGui::DragFloat("Z", &lightP.z, 0.1f, 0.0f, 0.0f, "%.2f");
-//     ImGui::DragFloat("exposure", &exposure, 0.01f, 0.0f, 0.0f, "%.2f");
-//     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-//     ImGui::End();
-// }

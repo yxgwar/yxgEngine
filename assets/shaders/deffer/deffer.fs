@@ -11,6 +11,8 @@ uniform sampler2D ssao;
 uniform vec3 lightPos;
 uniform vec3 lightColor;
 
+uniform bool use_ssao;
+
 vec3 CalcPointLight(vec3 normal, vec3 viewDir, vec3 diffTex, float specTex, vec3 FragPos, float shadow, float ambientOcclusion)
 {
     vec3 ambient = 0.3 * diffTex;
@@ -34,7 +36,10 @@ void main()
     vec3 diffTex = texture(gAlbedoSpec, TexCoords).rgb;
     float specTex = texture(gAlbedoSpec, TexCoords).a;
     float shadow = texture(gShadow, TexCoords).r;
-    float ambientOcclusion = texture(ssao, TexCoords).r;
+
+    float ambientOcclusion = 1.0;
+    if(use_ssao)
+        ambientOcclusion = texture(ssao, TexCoords).r;
 
     vec3 viewDir = normalize(-FragPos);
 

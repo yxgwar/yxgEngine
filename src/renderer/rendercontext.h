@@ -45,6 +45,11 @@ public:
     RenderContext(const RenderContext&) = delete;
     void operator=(const RenderContext&) = delete;
 
+// imgui用
+public:
+    bool GetSSAO() const {return ssao;}
+    void SetSSAO(bool flag) {ssao = flag;}
+
 private:
     RenderContext() = default; // 私有构造函数
     ~RenderContext() = default;
@@ -53,4 +58,6 @@ private:
 
     std::unique_ptr<UniformBuffer> cameraUBO;
     std::unique_ptr<Texture> noiseTex;
+private:
+    bool ssao = true;
 };

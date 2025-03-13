@@ -1,18 +1,21 @@
 #pragma once
 
 #include "window.h"
-#include "openGL/framebuffer.h"
+#include "renderer/openGL/framebuffer.h"
 #include <memory>
 
 class ImGuiRenderer
 {
 public:
     static void Init(Window& window);
+    static void OnUpdate();
+    static void Destroy();
+    inline static std::unique_ptr<FrameBuffer> imguiF = nullptr;
+private:
     static void Begin();
     static void End();
-    static void Destroy();
-    //imgui
-    inline static std::unique_ptr<FrameBuffer> imguiF = nullptr;
+
+    static void DrawGlobal();
 private:
     inline static int m_width, m_height;
 };

@@ -1,5 +1,5 @@
 #include "application.h"
-#include "renderer/ImGuiRenderer.h"
+#include "imguiRenderer/ImGuiRenderer.h"
 #include "renderer/rendercontext.h"
 #include "renderer/RenderQuad.h"
 #include "import/import.h"
@@ -12,8 +12,6 @@ Application::Application(int width, int height)
     m_window.SetCallback();
 
     RenderQuad::Init();
-
-    ImGuiRenderer::Init(m_window);
 
     Import::GenDefault();
 
@@ -28,6 +26,8 @@ Application::Application(int width, int height)
     m_renderPipeline.AddPass(std::make_unique<GBufferPass>(renderContext, m_width, m_height));
     m_renderPipeline.AddPass(std::make_unique<SSAOPass>(renderContext, m_width, m_width));
     m_renderPipeline.AddPass(std::make_unique<LightProcessPass>());
+    
+    ImGuiRenderer::Init(m_window);
 }
 
 void Application::Run()
@@ -43,8 +43,7 @@ void Application::Run()
         m_scene.OnLogicUpdate(deltaTime, m_window);
         m_scene.OnRenderUpdate(deltaTime, m_renderPipeline);
 
-        ImGuiRenderer::Begin();
-        ImGuiRenderer::End();
+        ImGuiRenderer::OnUpdate();
         m_window.OnUpdate();
 
         Input::OnUpdate();

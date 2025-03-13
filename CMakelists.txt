@@ -20,6 +20,7 @@ file(GLOB src
     ${PROJECT_SOURCE_DIR}/src/renderer/openGL/*.cpp
     ${PROJECT_SOURCE_DIR}/src/object/*.cpp
     ${PROJECT_SOURCE_DIR}/src/import/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/imguiRenderer/*.cpp
 )
 
 file(GLOB imgui 

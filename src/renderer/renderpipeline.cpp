@@ -1,7 +1,7 @@
 #include "renderpipeline.h"
 #include "scene.h"
 #include "RenderQuad.h"
-#include "ImGuiRenderer.h"
+#include "imguiRenderer/ImGuiRenderer.h"
 #include "import/import.h"
 #include <iostream>
 #include <random>
@@ -126,8 +126,11 @@ void LightProcessPass::Execute(Scene &scene, RenderContext &context)
     auto gBuffer = context.GetFBO(FBOType::gBUFFER);
     gBuffer->bindTexture();
 
-    auto ssao = context.GetFBO(FBOType::SSAOblur);
-    ssao->bindTexture(4);
+    if(context.GetSSAO())
+    {
+        auto ssao = context.GetFBO(FBOType::SSAOblur);
+        ssao->bindTexture(4);
+    }
 
     ImGuiRenderer::imguiF->bind();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -141,6 +144,8 @@ void LightProcessPass::Execute(Scene &scene, RenderContext &context)
         auto light = scene.GetMainLight();
         shader->setVec3("lightPos", scene.GetCamera()->getView() * glm::vec4(light->GetComponent<TransformComponent>()->position, 1.0f));
         shader->setVec3("lightColor", light->GetComponent<LightComponent>()->color);
+
+        shader->setBool("use_ssao", context.GetSSAO());
     
         RenderQuad::DrawwithShader(*shader);
     }
@@ -271,38 +276,41 @@ SSAOPass::SSAOPass(RenderContext& context, int width, int height)
 
 void SSAOPass::Execute(Scene &scene, RenderContext &context)
 {
-    auto gBuffer = context.GetFBO(FBOType::gBUFFER);
-    gBuffer->bindTexture();
-
-    auto ssao = context.GetFBO(FBOType::SSAO);
-    ssao->bind();
-
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    auto shader = Import::GetShader("ssao");
-    if(shader)
+    if(context.GetSSAO())
     {
-        shader->use();
-        shader->setMat4("projection", scene.GetCamera()->getProjection());
-        RenderQuad::DrawwithShader(*shader);
-    }
-    else
-        std::cout << "ssao shader get error!" << std::endl;
+        auto gBuffer = context.GetFBO(FBOType::gBUFFER);
+        gBuffer->bindTexture();
     
-    ssao->bindTexture();
-    auto ssaoblur = context.GetFBO(FBOType::SSAOblur);
-    ssaoblur->bind();
-
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    shader = Import::GetShader("ssaoblur");
-    if(shader)
-    {
-        shader->use();
-        RenderQuad::DrawwithShader(*shader);
+        auto ssao = context.GetFBO(FBOType::SSAO);
+        ssao->bind();
+    
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+        auto shader = Import::GetShader("ssao");
+        if(shader)
+        {
+            shader->use();
+            shader->setMat4("projection", scene.GetCamera()->getProjection());
+            RenderQuad::DrawwithShader(*shader);
+        }
+        else
+            std::cout << "ssao shader get error!" << std::endl;
+        
+        ssao->bindTexture();
+        auto ssaoblur = context.GetFBO(FBOType::SSAOblur);
+        ssaoblur->bind();
+    
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+        shader = Import::GetShader("ssaoblur");
+        if(shader)
+        {
+            shader->use();
+            RenderQuad::DrawwithShader(*shader);
+        }
+        else
+            std::cout << "ssao shader get error!" << std::endl;
     }
-    else
-        std::cout << "ssao shader get error!" << std::endl;
 }
