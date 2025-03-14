@@ -17,7 +17,7 @@ void ImGuiRenderer::Init(Window &window, RenderPipeline& rp)
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msyh.ttc", 16.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
     IM_ASSERT(font != nullptr);
-    io.IniFilename = "imgui.ini";
+    io.IniFilename = "../imgui.ini";
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -169,7 +169,11 @@ void ImGuiRenderer::DrawGlobal()
             ImGui::SetTooltip(u8"泛光阈值");
         }
     }
-    
+
+    ImGui::Spacing(); // 添加间隔使UI更美观
+    ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.4f, 1.0f), "Render Mode Choose");
+    ImGui::Separator(); // 添加分隔线
+
     // 创建下拉菜单
     if (ImGui::Combo("Render Mode", &current_mode_index, modes, IM_ARRAYSIZE(modes)))
     {

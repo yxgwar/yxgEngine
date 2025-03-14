@@ -1,6 +1,6 @@
 # yxgEngine
 
-![](./docs/example2.png)
+![](./docs/example3.png)
 
 一款基于opengl与glfw的3D引擎
 
@@ -21,3 +21,4 @@
 - 将组件模式升级为ECS
 - CSM
 - 多光源阴影
+- 角色动画
