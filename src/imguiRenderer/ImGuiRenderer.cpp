@@ -15,6 +15,8 @@ void ImGuiRenderer::Init(Window &window, RenderPipeline& rp)
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msyh.ttc", 16.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
+    IM_ASSERT(font != nullptr);
     io.IniFilename = "imgui.ini";
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
@@ -155,7 +157,7 @@ void ImGuiRenderer::DrawGlobal()
         ImGui::TextDisabled("(?)");
         if (ImGui::IsItemHovered())
         {
-            ImGui::SetTooltip("屏幕空间环境光遮蔽\n【仅延迟渲染有效】");
+            ImGui::SetTooltip(u8"屏幕空间环境光遮蔽\n【仅延迟渲染有效】");
         }
     }
 
