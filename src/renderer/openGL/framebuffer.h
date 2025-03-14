@@ -22,6 +22,9 @@ public:
     void bindSingleTexture(int index);
 
     void bind();
+    void bindRead();
+    void bindDraw();
+    void blitDepth();
     void unbind();
 
     inline int GetWidth() const {return m_width;}

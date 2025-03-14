@@ -23,9 +23,10 @@ enum class RenderMode
 class RenderPipeline
 {
 public:
-    void AddCommonPass(std::unique_ptr<IRenderPass> pass)   {m_commonPasses.emplace_back(std::move(pass));}
-    void AddForwardPass(std::unique_ptr<IRenderPass> pass)  {m_forwardPasses.emplace_back(std::move(pass));}
-    void AddDeferredPass(std::unique_ptr<IRenderPass> pass) {m_deferredPasses.emplace_back(std::move(pass));}
+    void AddCommonPass(std::unique_ptr<IRenderPass> pass)       {m_commonPasses.emplace_back(std::move(pass));}
+    void AddForwardPass(std::unique_ptr<IRenderPass> pass)      {m_forwardPasses.emplace_back(std::move(pass));}
+    void AddDeferredPass(std::unique_ptr<IRenderPass> pass)     {m_deferredPasses.emplace_back(std::move(pass));}
+    void AddPostProcessPass(std::unique_ptr<IRenderPass> pass)  {m_postPasses.emplace_back(std::move(pass));}
     void Execute(Scene& scene, RenderContext& context);
 
     void UpdateGlobalUBO(Camera* camera, RenderContext& context);
@@ -36,6 +37,7 @@ private:
     std::vector<std::unique_ptr<IRenderPass>> m_commonPasses;   // 公共Pass
     std::vector<std::unique_ptr<IRenderPass>> m_forwardPasses;  // 正向专用
     std::vector<std::unique_ptr<IRenderPass>> m_deferredPasses; // 延迟专用
+    std::vector<std::unique_ptr<IRenderPass>> m_postPasses;     // 后处理pass
     RenderMode m_currentMode = RenderMode::Deferred;
 };
 
@@ -61,11 +63,9 @@ public:
 class ForwardPass: public IRenderPass
 {
 public:
-    ForwardPass(RenderContext& context, bool hdr = false, int width = 1920, int height = 1080);
+    ForwardPass(RenderContext& context, int width = 1920, int height = 1080);
 
     void Execute(Scene& scene, RenderContext& context) override;
-private:
-    bool m_hdr;
 };
 
 // gBuffer
@@ -88,11 +88,7 @@ public:
 class PostProcessPass: public IRenderPass
 {
 public:
-    PostProcessPass(bool hdr = false);
-
     void Execute(Scene& scene, RenderContext& context) override;
-private:
-    bool m_hdr;
 };
 
 class SSAOPass: public IRenderPass

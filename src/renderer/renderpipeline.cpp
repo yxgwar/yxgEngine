@@ -3,7 +3,7 @@
 #include "RenderQuad.h"
 #include "imguiRenderer/ImGuiRenderer.h"
 #include "import/import.h"
-#include <iostream>
+#include "log.h"
 #include <random>
 
 float lerp(float a, float b, float f)
@@ -19,6 +19,9 @@ void RenderPipeline::Execute(Scene &scene, RenderContext &context)
     // 根据模式选择专用Pass
     auto& activePasses = (m_currentMode == RenderMode::Forward) ? m_forwardPasses : m_deferredPasses;
     for (auto& pass : activePasses)
+        pass->Execute(scene, context);
+
+    for(auto& pass : m_postPasses) 
         pass->Execute(scene, context);
 }
 
@@ -57,33 +60,39 @@ void ShadowMapPass::Execute(Scene &scene, RenderContext &context)
     fbo->unbind();
 }
 
-ForwardPass::ForwardPass(RenderContext &context, bool hdr, int width, int height)
-    :m_hdr(hdr)
+ForwardPass::ForwardPass(RenderContext &context, int width, int height)
 {
-    if(hdr)
-        context.GenHDR(width, height);
-    else
-        context.GenForwad(width, height);
+    // HDR
+    context.GenHDR(width, height);
+    // 后处理,MSAA
+    context.GenForwad(width, height);
 }
 
 void ForwardPass::Execute(Scene &scene, RenderContext &context)
 {
     std::shared_ptr<FrameBuffer> fbo;
-    if(m_hdr)
+    if(context.GetHDR())
         fbo = context.GetFBO(FBOType::HDR);
     else
         fbo = context.GetFBO(FBOType::Forward);
     fbo->bind();
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto camera = scene.GetCamera();
-    auto light = scene.GetMainLight();
+    auto mainlight = scene.GetMainLight();
     for(auto entity : scene.GetEntities())
     {
         if(auto render = entity->GetComponent<RenderComponent>())
         {
-            render->Render(*camera, light);
+            render->Render(*camera, mainlight, context.GetBloom());
+        }
+    }
+    for(auto light: scene.GetLights())
+    {
+        if(auto render = light->GetComponent<RenderComponent>())
+        {
+            render->RenderLight(light, context.GetBloom());
         }
     }
     fbo->unbind();
@@ -101,18 +110,18 @@ void GBufferPass::Execute(Scene &scene, RenderContext &context)
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    auto light = scene.GetMainLight();
+    auto mainlight = scene.GetMainLight();
     auto camera = scene.GetCamera();
     glm::mat4 vp = glm::mat4(1.0f);
-    if(light)
+    if(mainlight)
     {
-        auto lc = light->GetComponent<CameraComponent>();
+        auto lc = mainlight->GetComponent<CameraComponent>();
         vp = lc->projection * std::get<glm::mat4>(lc->view);
     }
     for(auto entity : scene.GetEntities())
     {
         if(auto render = entity->GetComponent<RenderComponent>())
-            render->RendergBuffer(*camera, vp, light);
+            render->RendergBuffer(*camera, vp, mainlight);
     }
     fbo->unbind();
 }
@@ -122,7 +131,13 @@ void LightProcessPass::Execute(Scene &scene, RenderContext &context)
     auto gBuffer = context.GetFBO(FBOType::gBUFFER);
     gBuffer->bindTexture();
 
-    ImGuiRenderer::imguiF->bind();
+    std::shared_ptr<FrameBuffer> fbo;
+    if(context.GetHDR())
+        fbo = context.GetFBO(FBOType::HDR);
+    else
+        fbo = context.GetFBO(FBOType::Forward);
+    fbo->bind();
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto shader = Import::GetShader("deffer");
@@ -135,25 +150,32 @@ void LightProcessPass::Execute(Scene &scene, RenderContext &context)
         shader->setVec3("lightColor", light->GetComponent<LightComponent>()->color);
 
         shader->setBool("use_ssao", context.GetSSAO());
+        shader->setFloat("bloom", context.GetBloom());
     
         RenderQuad::DrawwithShader(*shader);
     }
     else
-    {
-        std::cout << "deffer shader get error!" << std::endl;
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
+        ERROR("deffer rendering light process fail!");
 
-PostProcessPass::PostProcessPass(bool hdr)
-    :m_hdr(hdr)
-{
+    // 前向渲染光源（也可用于混合等，以后单独拆分为一个pass）
+    gBuffer->bindRead();
+    fbo->bindDraw();
+    gBuffer->blitDepth();
+    fbo->bind();
+    for(auto light: scene.GetLights())
+    {
+        if(auto render = light->GetComponent<RenderComponent>())
+        {
+            render->RenderLight(light, context.GetBloom());
+        }
+    }
+    fbo->unbind();
 }
 
 void PostProcessPass::Execute(Scene &scene, RenderContext &context)
 {
     std::shared_ptr<FrameBuffer> fbo;
-    if(m_hdr)
+    if(context.GetHDR())
     {
         fbo = context.GetFBO(FBOType::HDR);
         fbo->bindSingleTexture(1);
@@ -172,6 +194,7 @@ void PostProcessPass::Execute(Scene &scene, RenderContext &context)
                     blurh->bind();
                 else
                     blurv->bind();
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 blurShader->setInt("horizontal", horizontal);
                 RenderQuad::DrawwithShader(*blurShader);
                 if(horizontal)
@@ -193,14 +216,16 @@ void PostProcessPass::Execute(Scene &scene, RenderContext &context)
     
             auto hdrShader = Import::GetShader("HDR");
             if(hdrShader)
+            {
+                hdrShader->use();
+                hdrShader->setFloat("exposure", context.GetExposure());
                 RenderQuad::DrawwithShader(*hdrShader);
+            }
             else
-                std::cout << "hdr shader get error!" << std::endl;
+                ERROR("postprocess hdr fail!");
         }
         else
-        {
-            std::cout << "blur shader get error!" << std::endl;
-        }
+            ERROR("postprocess blur fail!");
     }
     else
     {
@@ -214,7 +239,7 @@ void PostProcessPass::Execute(Scene &scene, RenderContext &context)
         if(postShader)
             RenderQuad::DrawwithShader(*postShader);
         else
-            std::cout << "PostProcess shader get error!" << std::endl;
+            ERROR("postprocess fail");
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -248,7 +273,7 @@ SSAOPass::SSAOPass(RenderContext& context, int width, int height)
         shader->setVec2("screenSize", width, height);
     }
     else
-        std::cout << "ssao shader get error!" << std::endl;
+        ERROR("ssao initialization fail!");
 
     // Noise texture
     std::vector<glm::vec3> ssaoNoise;
@@ -282,7 +307,7 @@ void SSAOPass::Execute(Scene &scene, RenderContext &context)
             RenderQuad::DrawwithShader(*shader);
         }
         else
-            std::cout << "ssao shader get error!" << std::endl;
+            ERROR("ssao fail!");
         
         // 模糊SSAO
         ssao->bindTexture();
@@ -299,7 +324,7 @@ void SSAOPass::Execute(Scene &scene, RenderContext &context)
             RenderQuad::DrawwithShader(*shader);
         }
         else
-            std::cout << "ssao shader get error!" << std::endl;
+            ERROR("ssaoblur fail!");
         
         ssaoblur->unbind();
         ssaoblur->bindTexture(4);

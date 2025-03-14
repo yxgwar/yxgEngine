@@ -50,6 +50,15 @@ public:
     bool GetSSAO() const {return ssao;}
     void SetSSAO(bool flag) {ssao = flag;}
 
+    bool GetHDR() const {return hdr;}
+    void SetHDR(bool flag) {hdr = flag;}
+
+    float GetExposure() const {return exposure;}
+    void SetExposure(float value) {exposure = value;}
+
+    float GetBloom() const {return bloom;}
+    void SetBloom(float value) {bloom = value;}
+
 private:
     RenderContext() = default; // 私有构造函数
     ~RenderContext() = default;
@@ -60,4 +69,7 @@ private:
     std::unique_ptr<Texture> noiseTex;
 private:
     bool ssao = true;
+    bool hdr = true;
+    float exposure = 1.0f;
+    float bloom = 1.3f;
 };

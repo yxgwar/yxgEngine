@@ -65,7 +65,7 @@ void Scene::Init(int width, int height)
     tc->rotation = glm::quat(glm::vec3(0.0f, 0.0f, 1.0f), lc->direction);
     lc->EnableShadow();
     mainLight = entt;
-    m_entities.emplace_back(entt);
+    m_lights.emplace_back(entt);
 }
 
 void Scene::OnLogicUpdate(float deltaTime, Window& window)

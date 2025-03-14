@@ -117,6 +117,10 @@ void Import::GenDefault()
     GenStandardQuad();
     GenStandardCube();
 
+    // 光源材质
+    ShaderPool["light"] = std::make_shared<Shader>("../assets/shaders/light/light.vs", "../assets/shaders/light/light.fs");
+    MaterialPool["light"] = std::make_shared<Material>(ShaderPool["light"]);
+
     // 生成全白纹理
     TexturePool["white"] = std::make_shared<Texture>();
 
@@ -201,7 +205,21 @@ std::shared_ptr<Shader> Import::GetShader(const char *name)
     if(ShaderPool.find(name) != ShaderPool.end())
         return ShaderPool[name];
     else
+    {
+        std::cout << name << " shader get error!" << std::endl;
         return nullptr;
+    }
+}
+
+std::shared_ptr<Material> Import::GetMaterial(const char *name)
+{
+    if(MaterialPool.find(name) != MaterialPool.end())
+        return MaterialPool[name];
+    else
+    {
+        std::cout << name << " material get error!" << std::endl;
+        return nullptr;
+    }
 }
 
 void Import::GenStandardQuad()

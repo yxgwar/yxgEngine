@@ -1,5 +1,6 @@
 #version 460 core
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 in vec2 TexCoords;
 
 uniform sampler2D gPosition;
@@ -12,6 +13,7 @@ uniform vec3 lightPos;
 uniform vec3 lightColor;
 
 uniform bool use_ssao;
+uniform float bloom;
 
 vec3 CalcPointLight(vec3 normal, vec3 viewDir, vec3 diffTex, float specTex, vec3 FragPos, float shadow, float ambientOcclusion)
 {
@@ -45,9 +47,9 @@ void main()
 
     vec3 result = vec3(0.0);
     result += CalcPointLight(normal, viewDir, diffTex, specTex, FragPos, shadow, ambientOcclusion);
-
-    const float gamma = 2.2;
-    result = pow(result, vec3(1.0 / gamma));
     
     FragColor = vec4(result, 1.0);
+    float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > bloom)
+        BrightColor = vec4(FragColor.rgb, 1.0);
 }

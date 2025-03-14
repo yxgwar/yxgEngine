@@ -49,9 +49,10 @@ public:
 
     void LoadModel(std::string path);
 
-    void Render(Camera& camera, Entity* light) const;
+    void Render(Camera& camera, Entity* light, float bloom) const;
     void RenderDepth(glm::mat4& lightCamera) const;
     void RendergBuffer(Camera &camera, glm::mat4 &lightCamera, Entity* light) const;
+    void RenderLight(Entity* light, float bloom) const;
 };
 
 // 摄像机

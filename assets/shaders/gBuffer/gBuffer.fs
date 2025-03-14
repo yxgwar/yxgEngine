@@ -108,6 +108,8 @@ float PCF(float bias)
     vec3 projCoords = FragPosLightSpace.xyz / FragPosLightSpace.w;
     // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
+    if(projCoords.z > 1.0)
+        return 1.0;
 
     for (int i = 0; i < SamplerNum; i++)
     {

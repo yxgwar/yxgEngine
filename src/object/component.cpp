@@ -1,6 +1,7 @@
 #include "component.h"
 #include "entity.h"
 #include "import/import.h"
+#include "log.h"
 
 void TransformComponent::SetRotation(float radius, glm::vec3 direction)
 {
@@ -19,7 +20,7 @@ void RenderComponent::LoadModel(std::string path)
     Import::LoadModel(path, meshes, materials);
 }
 
-void RenderComponent::Render(Camera &camera, Entity* light) const
+void RenderComponent::Render(Camera &camera, Entity* light, float bloom) const
 {
     if (auto transform = owner->GetComponent<TransformComponent>())
     {
@@ -48,6 +49,7 @@ void RenderComponent::Render(Camera &camera, Entity* light) const
             material->SetMatrix3("NormalM", glm::transpose(glm::inverse(glm::mat3(entityMatrix))));
             material->SetVector3("lightPos", rc->position);
             material->SetVector3("lightColor", lc->color);
+            material->SetFloat("bloom", bloom);
             material->Bind();
 
             // 绘制该材质下的所有MeshSlot
@@ -72,17 +74,22 @@ void RenderComponent::RenderDepth(glm::mat4 &lightCamera) const
     {
         glm::mat4 entityMatrix = transform->GetTransformMatrix();
 
-        auto material = Import::MaterialPool["depthMap"];
-        // 绑定材质并设置全局参数（如相机）
-        material->SetMatrix4("lightSpaceMatrix", lightCamera);
-        material->SetMatrix4("model", entityMatrix);
-        material->Bind();
-
-        // 绘制该材质下的所有MeshSlot
-        for (const auto& meshslot : meshes)
+        auto material = Import::GetMaterial("depthMap");
+        if(material)
         {
-            meshslot->mesh->Draw();
+            // 绑定材质并设置全局参数（如相机）
+            material->SetMatrix4("lightSpaceMatrix", lightCamera);
+            material->SetMatrix4("model", entityMatrix);
+            material->Bind();
+    
+            // 绘制该材质下的所有MeshSlot
+            for (const auto& meshslot : meshes)
+            {
+                meshslot->mesh->Draw();
+            }
         }
+        else
+            ERROR("depthmap rendering fail!");
     }
 }
 
@@ -119,6 +126,31 @@ void RenderComponent::RendergBuffer(Camera &camera, glm::mat4 &lightCamera, Enti
                 meshslot->mesh->Draw();
             }
         }
+    }
+}
+
+void RenderComponent::RenderLight(Entity *light, float bloom) const
+{
+    if (auto transform = owner->GetComponent<TransformComponent>())
+    {
+        glm::mat4 entityMatrix = transform->GetTransformMatrix();
+
+        auto material = Import::GetMaterial("light");
+        if(material)
+        {
+            material->SetMatrix4("model", entityMatrix);
+            material->SetVector3("lightColor", light->GetComponent<LightComponent>()->color);
+            material->SetFloat("bloom", bloom - 0.5f);
+            material->Bind();
+
+            // 绘制该材质下的所有MeshSlot
+            for (const auto& meshslot : meshes)
+            {
+                meshslot->mesh->Draw();
+            }
+        }
+        else
+            ERROR("light rendering fail!");
     }
 }
 

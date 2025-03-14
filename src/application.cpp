@@ -21,11 +21,11 @@ Application::Application(int width, int height)
     bool hdr = true;
     m_renderPipeline.AddCommonPass(std::make_unique<PrePass>(renderContext));
     m_renderPipeline.AddCommonPass(std::make_unique<ShadowMapPass>(renderContext));
-    m_renderPipeline.AddForwardPass(std::make_unique<ForwardPass>(renderContext, hdr, m_width, m_height));
-    m_renderPipeline.AddForwardPass(std::make_unique<PostProcessPass>(hdr));
+    m_renderPipeline.AddForwardPass(std::make_unique<ForwardPass>(renderContext, m_width, m_height));
     m_renderPipeline.AddDeferredPass(std::make_unique<GBufferPass>(renderContext, m_width, m_height));
     m_renderPipeline.AddDeferredPass(std::make_unique<SSAOPass>(renderContext, m_width, m_width));
     m_renderPipeline.AddDeferredPass(std::make_unique<LightProcessPass>());
+    m_renderPipeline.AddPostProcessPass(std::make_unique<PostProcessPass>());
     
     ImGuiRenderer::Init(m_window, m_renderPipeline);
 }

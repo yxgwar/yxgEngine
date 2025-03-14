@@ -1,7 +1,7 @@
 #include "rendercontext.h"
 #include "import/import.h"
 #include "glm/gtc/type_ptr.hpp"
-#include <iostream>
+#include "log.h"
 
 std::shared_ptr<FrameBuffer> RenderContext::GetFBO(FBOType type)
 {
@@ -29,7 +29,7 @@ void RenderContext::GenForwad(int width, int height)
         postShader->setVec2("textureSize", width, height);
     }
     else
-        std::cout << "PostProcess shader get error!" << std::endl;
+        ERROR("postShader initialization fail!");
 }
 
 void RenderContext::GenHDR(int width, int height)
@@ -43,10 +43,9 @@ void RenderContext::GenHDR(int width, int height)
         hdrShader->use();
         hdrShader->setInt("scene", 0);
         hdrShader->setInt("bloomBlur", 1);
-        hdrShader->setFloat("exposure", 0.8f);
     }
     else
-        std::cout << "hdr shader get error!" << std::endl;
+        ERROR("hdrshader initialization fail!");
 
     fboPool[(int)FBOType::BLURH] = std::make_shared<FrameBuffer>();
     fboPool[(int)FBOType::BLURH]->attachPingPong(width, height);
@@ -59,7 +58,7 @@ void RenderContext::GenHDR(int width, int height)
         blurShader->setInt("image", 0);
     }
     else
-        std::cout << "blur shader get error!" << std::endl;
+        ERROR("blurshader initialization fail!");
 }
 
 void RenderContext::GengBuffer(int width, int height)
@@ -78,7 +77,7 @@ void RenderContext::GengBuffer(int width, int height)
         defferShader->setInt("ssao", 4);
     }
     else
-        std::cout << "deffer shader get error!" << std::endl;
+        ERROR("deffershader initialization fail!");
 }
 
 void RenderContext::GenSSAO(int width, int height, void* noise)
@@ -97,7 +96,7 @@ void RenderContext::GenSSAO(int width, int height, void* noise)
         ssaoShader->setInt("texNoise", 2);
     }
     else
-        std::cout << "ssao shader get error!" << std::endl;
+        ERROR("ssao shader initialization fail!");
     
     fboPool[(int)FBOType::SSAOblur] = std::make_shared<FrameBuffer>();
     fboPool[(int)FBOType::SSAOblur]->attachSingle(width, height);
@@ -109,7 +108,7 @@ void RenderContext::GenSSAO(int width, int height, void* noise)
         ssaoblurShader->setInt("ssaoInput", 0);
     }
     else
-        std::cout << "ssaoblur shader get error!" << std::endl;
+        ERROR("ssaoblur shader initialization fail!");
 }
 
 void RenderContext::GenUBO()

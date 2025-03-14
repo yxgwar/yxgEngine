@@ -294,6 +294,21 @@ void FrameBuffer::bind()
     glViewport(0, 0, m_width, m_height);
 }
 
+void FrameBuffer::bindRead()
+{
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);
+}
+
+void FrameBuffer::bindDraw()
+{
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ID);
+}
+
+void FrameBuffer::blitDepth()
+{
+    glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+}
+
 void FrameBuffer::unbind()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

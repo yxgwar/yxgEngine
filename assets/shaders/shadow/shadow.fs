@@ -16,6 +16,7 @@ uniform vec3 lightPos;
 uniform vec3 lightColor;
 
 uniform vec3 viewPos;
+uniform float bloom;
 
 #define EPS 1e-3
 
@@ -110,6 +111,8 @@ float PCF(float bias)
     vec3 projCoords = fs_in.FragPosLightSpace.xyz / fs_in.FragPosLightSpace.w;
     // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
+    if(projCoords.z > 1.0)
+        return 1.0;
 
     for (int i = 0; i < SamplerNum; i++)
     {
@@ -149,6 +152,6 @@ void main()
 
     FragColor = vec4(result, 1.0);
     float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-    if(brightness > 1.0)
+    if(brightness > bloom)
         BrightColor = vec4(FragColor.rgb, 1.0);
 }

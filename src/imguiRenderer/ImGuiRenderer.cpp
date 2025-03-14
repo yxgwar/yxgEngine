@@ -132,6 +132,43 @@ void ImGuiRenderer::DrawGlobal()
     // 将当前模式转换为整数索引
     RenderMode current_mode = m_renderPipeline->GetRenderMode();
     int current_mode_index = static_cast<int>(current_mode);
+
+    RenderContext& renderContext = RenderContext::GetInstance();
+
+    bool hdr_enabled = renderContext.GetHDR();
+    ImGui::Checkbox("Enable HDR", &hdr_enabled);
+    renderContext.SetHDR(hdr_enabled);
+    ImGui::SameLine();
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip(u8"HDR启用");
+    }
+    if(hdr_enabled)
+    {
+        ImGui::Spacing(); // 添加间隔使UI更美观
+        ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.4f, 1.0f), "hdr Rendering Settings");
+        ImGui::Separator(); // 添加分隔线
+    
+        float exposure = renderContext.GetExposure();
+        ImGui::DragFloat("exposure", &exposure, 0.01f, 0.0f, 2.0f);
+        renderContext.SetExposure(exposure);
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(u8"曝光系数");
+        }
+        float bloom = renderContext.GetBloom();
+        ImGui::DragFloat("bloom", &bloom, 0.01f, 0.0f, 2.0f);
+        renderContext.SetBloom(bloom);
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(u8"泛光阈值");
+        }
+    }
     
     // 创建下拉菜单
     if (ImGui::Combo("Render Mode", &current_mode_index, modes, IM_ARRAYSIZE(modes)))
@@ -147,8 +184,6 @@ void ImGuiRenderer::DrawGlobal()
         ImGui::Spacing(); // 添加间隔使UI更美观
         ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.4f, 1.0f), "Deferred Rendering Settings");
         ImGui::Separator(); // 添加分隔线
-
-        RenderContext& renderContext = RenderContext::GetInstance();
     
         bool ssao_enabled = renderContext.GetSSAO();
         ImGui::Checkbox("Enable SSAO", &ssao_enabled);
