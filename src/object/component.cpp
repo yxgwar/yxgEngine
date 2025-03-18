@@ -25,7 +25,7 @@ void RenderComponent::Render(Camera &camera, Entity* light, float bloom) const
     if (auto transform = owner->GetComponent<TransformComponent>())
     {
         glm::mat4 entityMatrix = transform->GetTransformMatrix();
-        // 按材质索引分组MeshSlot
+        // 按材质索引分组MeshSlot(待优化)
         std::unordered_map<int, std::vector<std::shared_ptr<MeshSlot>>> materialGroups;
         for (const auto& meshSlot : meshes)
         {
@@ -61,7 +61,7 @@ void RenderComponent::Render(Camera &camera, Entity* light, float bloom) const
                 // 设置实例参数（如模型矩阵）
                 // material->SetMatrix4("model", modelMatrix);
 
-                // 绘制Mesh
+                // 绘制Mesh(相同材质可以合并，待优化)
                 meshslot->mesh->Draw();
             }
         }
