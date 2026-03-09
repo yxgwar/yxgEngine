@@ -6,10 +6,10 @@ class VertexBuffer
 {
 public:
     VertexBuffer() = default;
-    VertexBuffer(float* vertices, size_t size);
+    VertexBuffer(const void* vertices, size_t size);
     ~VertexBuffer();
 
-    void Init(float* vertices, size_t size);
+    void Init(const void* vertices, size_t size);
 
     void bind();
     void unbind();

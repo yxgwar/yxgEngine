@@ -6,10 +6,10 @@ class IndexBuffer
 {
 public:
     IndexBuffer() = default;
-    IndexBuffer(unsigned int* indices, size_t size);
+    IndexBuffer(const unsigned int* indices, unsigned int count);
     ~IndexBuffer();
 
-    void Init(unsigned int* indices, size_t size);
+    void Init(const unsigned int* indices);
 
     void bind();
     void unbind();

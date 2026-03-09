@@ -1,9 +1,10 @@
 #include "indexbuffer.h"
 #include "glad/glad.h"
 
-IndexBuffer::IndexBuffer(unsigned int *indices, size_t size)
+IndexBuffer::IndexBuffer(const unsigned int *indices, unsigned int count)
+    :count(count)
 {
-    Init(indices, size);
+    Init(indices);
 }
 
 IndexBuffer::~IndexBuffer()
@@ -11,12 +12,11 @@ IndexBuffer::~IndexBuffer()
     glDeleteBuffers(1, &ID);
 }
 
-void IndexBuffer::Init(unsigned int *indices, size_t size)
+void IndexBuffer::Init(const unsigned int *indices)
 {
     glGenBuffers(1, &ID);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW);
-    count = size / sizeof(unsigned int);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), indices, GL_STATIC_DRAW);
     type = GL_UNSIGNED_INT;
 }
 

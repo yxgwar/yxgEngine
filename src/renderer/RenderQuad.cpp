@@ -16,7 +16,7 @@ void RenderQuad::Init()
     };
 
     m_vbo = std::make_shared<VertexBuffer>(vertices, sizeof(vertices));
-    m_ebo = std::make_shared<IndexBuffer>(indices, sizeof(indices));
+    m_ebo = std::make_shared<IndexBuffer>(indices, std::size(indices));
     m_vao = std::make_unique<VertexArray>();
 
     std::vector<VertexAttribute> attribute = {

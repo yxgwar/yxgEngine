@@ -1,9 +1,9 @@
 #include "mesh.h"
 #include "glad/glad.h"
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
-    :VBO((float*)&vertices[0], vertices.size() * sizeof(Vertex)),
-    EBO(&indices[0], indices.size() * sizeof(unsigned int))
+Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices)
+    :VBO(vertices.data(), vertices.size() * sizeof(Vertex)),
+    EBO(indices.data(), indices.size())
 {
     std::vector<VertexAttribute> attributes = {
         {0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0},
