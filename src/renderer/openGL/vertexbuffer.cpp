@@ -1,6 +1,6 @@
 #include "vertexbuffer.h"
 #include "glad/glad.h"
-#include "mesh.h"
+#include "object/mesh.h"
 
 VertexBuffer::VertexBuffer(const void* vertices, size_t size)
 {

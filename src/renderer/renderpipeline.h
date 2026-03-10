@@ -19,14 +19,30 @@ enum class RenderMode
     Deferred
 };
 
+enum class PassPhase{
+    Common,
+    Forward,
+    Deferred,
+    Post
+};
+
 // 渲染管线管理器
 class RenderPipeline
 {
 public:
-    void AddCommonPass(std::unique_ptr<IRenderPass> pass)       {m_commonPasses.emplace_back(std::move(pass));}
-    void AddForwardPass(std::unique_ptr<IRenderPass> pass)      {m_forwardPasses.emplace_back(std::move(pass));}
-    void AddDeferredPass(std::unique_ptr<IRenderPass> pass)     {m_deferredPasses.emplace_back(std::move(pass));}
-    void AddPostProcessPass(std::unique_ptr<IRenderPass> pass)  {m_postPasses.emplace_back(std::move(pass));}
+    template<PassPhase Phase, typename T, typename... Args>
+    T* AddPass(Args&&... args){
+        static_assert(std::is_base_of<IRenderPass, T>::value, "T must derive from IRenderPass");
+        auto pass = std::make_unique<T>(std::forward<Args>(args)...);
+        T* ptr = pass.get();
+
+        if constexpr (Phase == PassPhase::Common) m_commonPasses.emplace_back(std::move(pass));
+        else if constexpr (Phase == PassPhase::Forward) m_forwardPasses.emplace_back(std::move(pass));
+        else if constexpr (Phase == PassPhase::Deferred) m_deferredPasses.emplace_back(std::move(pass));
+        else if constexpr (Phase == PassPhase::Post) m_postPasses.emplace_back(std::move(pass));
+        return ptr;
+    }
+
     void Execute(Scene& scene, RenderContext& context);
 
     void UpdateGlobalUBO(Camera* camera, RenderContext& context);
